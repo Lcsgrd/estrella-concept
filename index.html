@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estrella Concept – Marchand de Biens</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --noir: #0d0d0d;
+      --noir-doux: #161616;
+      --or: #c9a96e;
+      --or-clair: #e8cc9a;
+      --blanc: #f5f2ed;
+      --gris: #888;
+      --gris-clair: #bbb;
+      --texte: #d4cfc8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--noir);
+      color: var(--texte);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAVBAR ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.4rem 4rem;
+      transition: background 0.4s, backdrop-filter 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,169,110,0.15);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--or);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--blanc); }
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--gris-clair);
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--or); }
+    .nav-cta {
+      background: transparent;
+      border: 1px solid var(--or);
+      color: var(--or) !important;
+      padding: 0.55rem 1.4rem !important;
+      transition: background 0.3s, color 0.3s !important;
+    }
+    .nav-cta:hover {
+      background: var(--or) !important;
+      color: var(--noir) !important;
+    }
+
+    /* ─── HERO ─── */
+    #hero {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(13,13,13,0.92) 0%, rgba(13,13,13,0.55) 50%, rgba(13,13,13,0.85) 100%),
+        url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1800&q=80') center/cover no-repeat;
+    }
+    .hero-grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(201,169,110,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,169,110,0.04) 1px, transparent 1px);
+      background-size: 80px 80px;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 0 4rem;
+      max-width: 900px;
+      animation: fadeUp 1.2s ease both;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--or);
+      margin-bottom: 2rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      width: 40px;
+      height: 1px;
+      background: var(--or);
+    }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 7vw, 6.5rem);
+      font-weight: 300;
+      line-height: 1.05;
+      color: var(--blanc);
+      margin-bottom: 1.5rem;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--or);
+    }
+    .hero-sub {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: var(--gris-clair);
+      max-width: 520px;
+      margin-bottom: 3rem;
+    }
+    .hero-location {
+      font-size: 0.72rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-bottom: 2.5rem;
+    }
+    .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--or);
+      color: var(--noir);
+      padding: 1rem 2.5rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .btn-primary:hover { background: var(--or-clair); transform: translateY(-2px); }
+    .btn-outline {
+      border: 1px solid rgba(201,169,110,0.5);
+      color: var(--or);
+      padding: 1rem 2.5rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      font-weight: 400;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .btn-outline:hover { border-color: var(--or); background: rgba(201,169,110,0.08); }
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gris);
+      animation: bounce 2s infinite;
+    }
+    .hero-scroll::after {
+      content: '';
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(var(--or), transparent);
+    }
+
+    /* ─── STATS BAND ─── */
+    .stats-band {
+      background: var(--noir-doux);
+      border-top: 1px solid rgba(201,169,110,0.2);
+      border-bottom: 1px solid rgba(201,169,110,0.2);
+      display: flex;
+      justify-content: center;
+      gap: 0;
+    }
+    .stat-item {
+      padding: 3rem 4rem;
+      text-align: center;
+      border-right: 1px solid rgba(201,169,110,0.12);
+      flex: 1;
+      max-width: 280px;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.5rem;
+      font-weight: 300;
+      color: var(--or);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-top: 0.5rem;
+    }
+
+    /* ─── SECTION GÉNÉRIQUE ─── */
+    section { padding: 8rem 4rem; }
+    .section-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--or);
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 300;
+      color: var(--blanc);
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+    }
+    .section-title em { font-style: italic; color: var(--or); }
+    .section-text {
+      font-size: 0.92rem;
+      line-height: 1.9;
+      color: var(--gris-clair);
+      max-width: 560px;
+    }
+
+    /* ─── APPROCHE ─── */
+    #approche {
+      background: var(--noir-doux);
+      position: relative;
+      overflow: hidden;
+    }
+    #approche::before {
+      content: 'IMMOBILIER';
+      position: absolute;
+      top: 50%;
+      left: -2rem;
+      transform: translateY(-50%) rotate(-90deg);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 8rem;
+      font-weight: 600;
+      color: rgba(201,169,110,0.04);
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: 0.2em;
+    }
+    .approche-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .approche-image {
+      position: relative;
+    }
+    .approche-image img {
+      width: 100%;
+      height: 580px;
+      object-fit: cover;
+      display: block;
+    }
+    .approche-image::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: -20px;
+      right: 20px;
+      bottom: 20px;
+      border: 1px solid rgba(201,169,110,0.25);
+      z-index: -1;
+    }
+    .approche-image .img-badge {
+      position: absolute;
+      bottom: -1.5rem;
+      right: -1.5rem;
+      background: var(--or);
+      color: var(--noir);
+      padding: 1.5rem 2rem;
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .approche-image .img-badge strong {
+      display: block;
+      font-size: 2.2rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+    .approche-image .img-badge span {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* ─── SERVICES ─── */
+    #services {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 8rem 4rem;
+    }
+    .services-intro {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 5rem;
+      gap: 3rem;
+    }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5px;
+      background: rgba(201,169,110,0.15);
+    }
+    .service-card {
+      background: var(--noir);
+      padding: 3rem 2.5rem;
+      transition: background 0.3s;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--or);
+      transition: width 0.4s ease;
+    }
+    .service-card:hover { background: var(--noir-doux); }
+    .service-card:hover::after { width: 100%; }
+    .service-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 2rem;
+      color: var(--or);
+    }
+    .service-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 1.2; }
+    .service-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--blanc);
+      margin-bottom: 1rem;
+    }
+    .service-card p {
+      font-size: 0.88rem;
+      line-height: 1.8;
+      color: var(--gris-clair);
+    }
+
+    /* ─── PROFIL ─── */
+    #profil {
+      background:
+        linear-gradient(to right, rgba(13,13,13,1) 50%, rgba(13,13,13,0.6) 100%),
+        url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80') right center/cover no-repeat;
+      padding: 10rem 4rem;
+    }
+    .profil-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+    }
+    .profil-content { max-width: 560px; }
+    .profil-text {
+      font-size: 0.92rem;
+      line-height: 1.95;
+      color: var(--gris-clair);
+      margin-bottom: 1.5rem;
+    }
+    .profil-quote {
+      border-left: 2px solid var(--or);
+      padding-left: 1.5rem;
+      margin: 2.5rem 0;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.3rem;
+      color: var(--or-clair);
+      line-height: 1.6;
+    }
+
+    /* ─── POURQUOI NOUS ─── */
+    #pourquoi {
+      background: var(--noir-doux);
+      padding: 8rem 4rem;
+    }
+    .pourquoi-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .pourquoi-header {
+      text-align: center;
+      margin-bottom: 5rem;
+    }
+    .raisons-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3rem;
+      margin-top: 4rem;
+    }
+    .raison {
+      text-align: center;
+      padding: 3rem 2rem;
+      position: relative;
+    }
+    .raison-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem;
+      font-weight: 300;
+      color: rgba(201,169,110,0.1);
+      line-height: 1;
+      position: absolute;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .raison-icon {
+      width: 56px;
+      height: 56px;
+      border: 1px solid rgba(201,169,110,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      color: var(--or);
+      position: relative;
+      z-index: 1;
+    }
+    .raison-icon svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .raison h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--blanc);
+      margin-bottom: 0.8rem;
+      position: relative;
+      z-index: 1;
+    }
+    .raison p {
+      font-size: 0.86rem;
+      line-height: 1.8;
+      color: var(--gris-clair);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── OFFRE 48H ─── */
+    .offre-banner {
+      background: var(--or);
+      color: var(--noir);
+      padding: 5rem 4rem;
+      text-align: center;
+    }
+    .offre-banner h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+    }
+    .offre-banner p {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      opacity: 0.85;
+    }
+    .btn-dark {
+      display: inline-block;
+      background: var(--noir);
+      color: var(--or);
+      padding: 1rem 3rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+    .btn-dark:hover { background: #222; }
+
+    /* ─── CONTACT ─── */
+    #contact {
+      padding: 8rem 4rem;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 6rem;
+      align-items: start;
+    }
+    .contact-info h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.8rem;
+      font-weight: 300;
+      color: var(--blanc);
+      margin-bottom: 0.5rem;
+    }
+    .contact-info .tagline {
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      color: var(--or);
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+    }
+    .contact-detail {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      margin-bottom: 1.8rem;
+    }
+    .contact-detail-icon {
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(201,169,110,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--or);
+      flex-shrink: 0;
+    }
+    .contact-detail-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .contact-detail-text .label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-bottom: 0.25rem;
+    }
+    .contact-detail-text .value {
+      font-size: 0.92rem;
+      color: var(--gris-clair);
+    }
+    .contact-detail-text a {
+      color: var(--or);
+      text-decoration: none;
+    }
+    /* Form */
+    .contact-form { display: flex; flex-direction: column; gap: 1.2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gris);
+    }
+    .form-group input,
+    .form-group textarea {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(201,169,110,0.2);
+      color: var(--blanc);
+      padding: 0.9rem 1.2rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.3s;
+      resize: none;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus { border-color: var(--or); }
+    .form-group textarea { height: 130px; }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: var(--gris); }
+    .btn-submit {
+      background: var(--or);
+      color: var(--noir);
+      border: none;
+      padding: 1.1rem 3rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+      align-self: flex-start;
+    }
+    .btn-submit:hover { background: var(--or-clair); transform: translateY(-2px); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--noir-doux);
+      border-top: 1px solid rgba(201,169,110,0.15);
+      padding: 2.5rem 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--or);
+    }
+    .footer-logo span { color: var(--gris); }
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .footer-links a {
+      text-decoration: none;
+      color: var(--gris);
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      transition: color 0.3s;
+    }
+    .footer-links a:hover { color: var(--or); }
+    .footer-copy {
+      font-size: 0.72rem;
+      color: var(--gris);
+    }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(201,169,110,0.2);
+    }
+    .divider-diamond {
+      width: 6px; height: 6px;
+      background: var(--or);
+      transform: rotate(45deg);
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(8px); }
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      section { padding: 5rem 1.5rem; }
+      #hero { padding: 0; }
+      .hero-content { padding: 0 1.5rem; }
+      .approche-grid, .profil-inner, .contact-grid, .raisons-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .services-grid { grid-template-columns: 1fr; }
+      .stats-band { flex-wrap: wrap; }
+      .stat-item { border-right: none; border-bottom: 1px solid rgba(201,169,110,0.12); max-width: 100%; padding: 2rem; }
+      .form-row { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+      .approche-image img { height: 320px; }
+      .services-intro { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <a class="nav-logo" href="#">ESTRELLA <span>CONCEPT</span></a>
+  <ul class="nav-links">
+    <li><a href="#approche">Notre approche</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#profil">Qui sommes-nous</a></li>
+    <li><a href="#contact" class="nav-cta">Nous contacter</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Bourgoin-Jallieu — Nord Isère</div>
+    <h1 class="hero-title">
+      La maîtrise de votre<br>
+      <em>projet immobilier</em>
+    </h1>
+    <p class="hero-sub">Achat, vente, valorisation et rénovation de biens immobiliers. Une expertise terrain au service de votre patrimoine.</p>
+    <div class="hero-location">Marchand de biens · Négociateur · Investisseur</div>
+    <div class="btn-group">
+      <a href="#contact" class="btn-primary">Nous contacter</a>
+      <a href="#approche" class="btn-outline">Découvrir</a>
+    </div>
+  </div>
+  <div class="hero-scroll">Défiler</div>
+</section>
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="stat-item reveal">
+    <div class="stat-num">300+</div>
+    <div class="stat-label">Rénovations réalisées</div>
+  </div>
+  <div class="stat-item reveal" style="transition-delay:0.1s">
+    <div class="stat-num">10</div>
+    <div class="stat-label">Années d'expérience</div>
+  </div>
+  <div class="stat-item reveal" style="transition-delay:0.2s">
+    <div class="stat-num">48H</div>
+    <div class="stat-label">Offre d'achat</div>
+  </div>
+  <div class="stat-item reveal" style="transition-delay:0.3s">
+    <div class="stat-num">100%</div>
+    <div class="stat-label">Accompagnement sur mesure</div>
+  </div>
+</div>
+
+<!-- APPROCHE -->
+<section id="approche">
+  <div class="approche-grid">
+    <div class="approche-image reveal">
+      <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80" alt="Rénovation immobilière" />
+      <div class="img-badge">
+        <strong>+300</strong>
+        <span>rénovations</span>
+      </div>
+    </div>
+    <div class="reveal" style="transition-delay:0.15s">
+      <div class="section-label">Notre approche</div>
+      <h2 class="section-title">Achat – Valorisation<br><em>Rénovation</em></h2>
+      <div class="divider"><div class="divider-diamond"></div></div>
+      <p class="section-text" style="margin-bottom:1.2rem">
+        Vous possédez une maison avec terrain, un ensemble immobilier, ou d'autres biens ? Quel que soit l'état de votre propriété, nous pouvons lui donner une seconde vie.
+      </p>
+      <p class="section-text" style="margin-bottom:2rem">
+        Nous achetons, valorisons et rénovons des biens d'habitation comme d'entreprise — maisons, appartements, bâtiments industriels, restaurants et bien plus encore.
+      </p>
+      <a href="#contact" class="btn-primary">Nous contacter</a>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" style="max-width:100%;background:var(--noir);padding:8rem 4rem;">
+  <div style="max-width:1300px;margin:0 auto;">
+    <div class="services-intro">
+      <div class="reveal">
+        <div class="section-label">À votre service</div>
+        <h2 class="section-title">Nos projets<br><em>immobiliers</em></h2>
+      </div>
+      <p class="section-text reveal" style="transition-delay:0.1s;text-align:right">
+        Particuliers ou entreprises, nous intervenons sur tous types de projets avec rigueur et expertise.
+      </p>
+    </div>
+    <div class="services-grid reveal">
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V21H15v-5h-6v5H3V9.5z"/></svg>
+        </div>
+        <h3>Maison avec terrain</h3>
+        <p>Acquisition de maisons individuelles avec terrain, qu'il s'agisse de biens à rénover, de divisions parcellaires ou de projets de valorisation foncière.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="9" height="14"/><rect x="13" y="3" width="9" height="18"/></svg>
+        </div>
+        <h3>Ensemble immobilier</h3>
+        <p>Reprise d'immeubles de rapport, copropriétés, ou ensembles à restructurer. Nous étudions chaque dossier avec soin pour maximiser le potentiel du bien.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21V12h6v9"/><circle cx="12" cy="8" r="1"/></svg>
+        </div>
+        <h3>Autres produits immobiliers</h3>
+        <p>Locaux commerciaux, bâtiments industriels, restaurants, écoles… Notre expérience couvre l'ensemble des secteurs de l'immobilier professionnel et spécialisé.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROFIL -->
+<section id="profil">
+  <div class="profil-inner">
+    <div class="profil-content reveal">
+      <div class="section-label">Qui sommes-nous</div>
+      <h2 class="section-title">Une expertise<br><em>terrain</em></h2>
+      <div class="divider"><div class="divider-diamond"></div></div>
+      <p class="profil-text">
+        Johan Estrella a débuté sa carrière en 2012 comme apprenti charpentier et a rejoint les Compagnons du Devoir pour se perfectionner. En 2014, sa passion pour la rénovation l'a conduit à se former sur tous les corps de métier.
+      </p>
+      <p class="profil-text">
+        Titulaire d'un brevet professionnel en charpente, d'un CAP installateur thermique et d'un CAP électricien, il est devenu chef d'équipe puis conducteur de travaux tous corps d'état.
+      </p>
+      <blockquote class="profil-quote">
+        « Un travail honnête, de qualité et d'excellence — c'est l'engagement que je prends avec chaque client. »
+      </blockquote>
+      <p class="profil-text">
+        Aujourd'hui, fort de plus de 300 rénovations réalisées dans tous les secteurs, il exerce principalement comme marchand de biens et accompagne ses clients avec rigueur et transparence.
+      </p>
+    </div>
+    <div class="reveal" style="transition-delay:0.2s">
+      <div class="section-label">Notre histoire</div>
+      <h2 class="section-title">Basé à<br><em>Bourgoin-Jallieu</em></h2>
+      <div class="divider"><div class="divider-diamond"></div></div>
+      <p class="section-text" style="margin-bottom:1.5rem">
+        ESTRELLA Concept est une entreprise à taille humaine, forte de 10 ans d'expérience dans le bâtiment. L'éthique professionnelle et l'excellence sont les valeurs que nous plaçons au cœur de notre travail.
+      </p>
+      <p class="section-text">
+        Particuliers comme professionnels bénéficient d'un interlocuteur unique, d'un projet sur mesure et d'un accompagnement personnalisé à chaque étape.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- POURQUOI NOUS -->
+<section id="pourquoi">
+  <div class="pourquoi-inner">
+    <div class="pourquoi-header reveal">
+      <div class="section-label">Pourquoi nous choisir</div>
+      <h2 class="section-title">Trois raisons de<br><em>nous faire confiance</em></h2>
+    </div>
+    <div class="raisons-grid">
+      <div class="raison reveal">
+        <div class="raison-num">01</div>
+        <div class="raison-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/></svg>
+        </div>
+        <h3>Un projet sur mesure</h3>
+        <p>Chaque projet est unique. Nous adaptons notre approche à votre situation, vos objectifs et vos contraintes pour vous proposer la meilleure solution.</p>
+      </div>
+      <div class="raison reveal" style="transition-delay:0.12s">
+        <div class="raison-num">02</div>
+        <div class="raison-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <h3>Un interlocuteur unique</h3>
+        <p>Johan Estrella suit personnellement chaque dossier du début à la fin. Une relation directe, sans intermédiaire, pour plus de réactivité et de clarté.</p>
+      </div>
+      <div class="raison reveal" style="transition-delay:0.24s">
+        <div class="raison-num">03</div>
+        <div class="raison-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Un accompagnement personnel</h3>
+        <p>De la première prise de contact jusqu'à la finalisation de votre vente, nous vous accompagnons à chaque étape avec transparence et professionnalisme.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OFFRE 48H -->
+<div class="offre-banner reveal">
+  <h2>Vous souhaitez vendre un bien ?</h2>
+  <p>Nous pouvons vous faire une offre d'achat en moins de 48 heures — sans recours obligatoire à un prêt bancaire.</p>
+  <a href="#contact" class="btn-dark">Nous contacter maintenant</a>
+</div>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-grid">
+    <div class="reveal">
+      <div class="section-label">Parlons de votre projet</div>
+      <div class="contact-info">
+        <h2>Nous contacter</h2>
+        <div class="tagline">Johan Estrella — Dirigeant</div>
+        <div class="contact-detail">
+          <div class="contact-detail-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="contact-detail-text">
+            <div class="label">Adresse</div>
+            <div class="value">4 Impasse des Frères Lumière<br>38300 Bourgoin-Jallieu</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-detail-icon">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.74a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div class="contact-detail-text">
+            <div class="label">Téléphone</div>
+            <div class="value"><a href="tel:+33629780727">06 29 78 07 27</a></div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-detail-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div class="contact-detail-text">
+            <div class="label">Email</div>
+            <div class="value"><a href="mailto:contact@estrella-concept.fr">contact@estrella-concept.fr</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal" style="transition-delay:0.15s">
+      <form class="contact-form" onsubmit="handleSubmit(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nom</label>
+            <input type="text" placeholder="Votre nom" />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="votre@email.fr" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input type="tel" placeholder="06 00 00 00 00" />
+          </div>
+          <div class="form-group">
+            <label>Société (optionnel)</label>
+            <input type="text" placeholder="Nom de votre société" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Adresse postale</label>
+          <input type="text" placeholder="Adresse de votre bien" />
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea placeholder="Décrivez votre projet immobilier..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit">Envoyer le message</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ESTRELLA <span>CONCEPT</span></div>
+  <ul class="footer-links">
+    <li><a href="#approche">Approche</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#profil">Qui sommes-nous</a></li>
+    <li><a href="#">Mentions légales</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 Estrella Concept — Bourgoin-Jallieu</div>
+</footer>
+
+<script>
+  // Navbar scroll
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Form submit
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.btn-submit');
+    btn.textContent = 'Message envoyé ✓';
+    btn.style.background = '#4caf50';
+    btn.style.color = '#fff';
+    setTimeout(() => {
+      btn.textContent = 'Envoyer le message';
+      btn.style.background = '';
+      btn.style.color = '';
+      e.target.reset();
+    }, 3000);
+  }
+</script>
+</body>
+</html>
