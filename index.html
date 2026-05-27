@@ -5,18 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VG PROGRAM – Marchand de Biens</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, orderBy, query }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBqWSxNsmfH1WEjC5GPME7me01fJgFg0AU",
+      authDomain: "vg-program-3c750.firebaseapp.com",
+      projectId: "vg-program-3c750",
+      storageBucket: "vg-program-3c750.firebasestorage.app",
+      messagingSenderId: "961802200405",
+      appId: "1:961802200405:web:1a73a68f023f754201fbdc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const biensCol = collection(db, "biens");
+
+    window._fb = {
+      listen() {
+        const q = query(biensCol, orderBy("createdAt", "asc"));
+        onSnapshot(q, (snap) => {
+          biens.length = 0;
+          snap.forEach(d => biens.push({ _id: d.id, ...d.data() }));
+          renderBiens(window._filtreActif || "tous");
+          if (window._adminOpen) { renderAdminStats(); renderAdminTable(); }
+        });
+      },
+      async add(b)       { b.createdAt = Date.now(); await addDoc(biensCol, b); },
+      async update(id, b){ await updateDoc(doc(db, "biens", id), b); },
+      async remove(id)   { await deleteDoc(doc(db, "biens", id)); }
+    };
+
+    window._fb.listen();
+  <\/script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --noir: #0d0d0d;
-      --noir-doux: #161616;
+      /* ── Palette VG PROGRAM ── */
+      --noir: #0c0c0c;
+      --noir-doux: #141416;
+      --acier: #1a1c20;
       --or: #c9a96e;
-      --or-clair: #e8cc9a;
+      --or-clair: #e8d5a8;
+      --or-pale: #f5eed8;
       --blanc: #f5f2ed;
-      --gris: #888;
-      --gris-clair: #bbb;
+      --ivoire: #f0ede7;
+      --gris: #9a9590;
+      --gris-clair: #c4c0b8;
+      --gris-pierre: #6b6760;
       --texte: #d4cfc8;
+      /* ── Typographie ── */
+      --font-serif: 'Cormorant Garamond', 'Georgia', serif;
+      --font-sans: 'Outfit', 'Arial Narrow', sans-serif;
+      /* ── Espacements ── */
+      --sp-xs: 4px; --sp-s: 8px; --sp-m: 16px; --sp-l: 24px;
+      --sp-xl: 48px; --sp-2xl: 96px;
+      /* ── Traits ── */
+      --border-or: 1px solid rgba(201,169,110,0.25);
+      --border-or-fort: 1px solid rgba(201,169,110,0.6);
+      --border-or-pale: 1px solid rgba(201,169,110,0.12);
     }
 
     html { scroll-behavior: smooth; }
@@ -703,16 +754,265 @@
       .approche-image img { height: 320px; }
       .services-intro { flex-direction: column; }
     }
+
+    /* ════════════════════════════════
+       CHARTE GRAPHIQUE VG PROGRAM
+       Mise à jour identité visuelle
+    ════════════════════════════════ */
+
+    /* Logo nav overrides */
+    .nav-logo { text-decoration: none !important; }
+
+    /* Trait signature or sous les titres de section */
+    .section-label::after {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: var(--or);
+      margin-top: 8px;
+      opacity: 0.7;
+    }
+
+    /* Raffinement navbar */
+    nav { padding: 1.2rem 3.5rem; }
+    nav.scrolled { background: rgba(12,12,12,0.94); backdrop-filter: blur(16px); }
+
+    /* Hero eyebrow refiné */
+    .hero-eyebrow {
+      font-family: var(--font-sans);
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+    }
+
+    /* Typographie section titles */
+    .section-title {
+      font-family: var(--font-serif);
+      letter-spacing: 0.01em;
+    }
+
+    /* Stats band — couleur fond + séparateurs */
+    .stats-band { background: var(--acier); }
+    .stat-num { font-family: var(--font-serif); }
+
+    /* Service cards — border top or au hover */
+    .service-card {
+      border-top: 2px solid transparent;
+      transition: background 0.3s, border-top-color 0.3s;
+    }
+    .service-card:hover { border-top-color: var(--or); }
+
+    /* Raison items — cadre or léger */
+    .raison { border: var(--border-or-pale); }
+    .raison:hover { border-color: rgba(201,169,110,0.2); }
+
+    /* Quote styling */
+    .profil-quote {
+      border-left: 1.5px solid var(--or);
+      background: rgba(201,169,110,0.04);
+      padding: 1.2rem 1.5rem;
+    }
+
+    /* Offre banner — fond or pur */
+    .offre-banner {
+      background: var(--or);
+      position: relative;
+      overflow: hidden;
+    }
+    .offre-banner::before {
+      content: 'VG';
+      position: absolute;
+      right: 4rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-serif);
+      font-size: 14rem;
+      font-weight: 300;
+      color: rgba(0,0,0,0.06);
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    /* Contact detail icons — carré or */
+    .contact-detail-icon { background: rgba(201,169,110,0.06); }
+
+    /* Inputs focus */
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--or);
+      background: rgba(201,169,110,0.03);
+    }
+
+    /* Footer refinement */
+    footer { background: var(--noir); border-top: var(--border-or-pale); }
+
+    /* Divider diamond */
+    .divider-diamond { background: var(--or); width: 5px; height: 5px; }
+    .divider::before, .divider::after { background: rgba(201,169,110,0.18); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--noir); }
+    ::-webkit-scrollbar-thumb { background: rgba(201,169,110,0.3); border-radius: 2px; }
+
+    /* Selection */
+    ::selection { background: rgba(201,169,110,0.25); color: var(--blanc); }
+
+    /* ─── SECTION BIENS ─── */
+    .biens-filtres {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .filtre-btn {
+      background: transparent;
+      border: 1px solid rgba(201,169,110,0.25);
+      color: var(--gris-clair);
+      padding: 0.5rem 1.3rem;
+      font-family: var(--font-sans);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: none;
+      transition: all 0.3s;
+    }
+    .filtre-btn:hover, .filtre-btn.active {
+      background: var(--or);
+      border-color: var(--or);
+      color: var(--noir);
+    }
+    .biens-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .bien-card {
+      background: var(--noir-doux);
+      border: 1px solid rgba(201,169,110,0.1);
+      overflow: hidden;
+      transition: border-color 0.35s, transform 0.35s;
+      position: relative;
+    }
+    .bien-card:hover {
+      border-color: rgba(201,169,110,0.45);
+      transform: translateY(-4px);
+    }
+    .bien-photo {
+      position: relative;
+      overflow: hidden;
+      height: 220px;
+    }
+    .bien-photo img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+      display: block;
+    }
+    .bien-card:hover .bien-photo img { transform: scale(1.05); }
+    .bien-statut {
+      position: absolute;
+      top: 1rem; left: 1rem;
+      padding: 0.3rem 0.85rem;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 500;
+      font-family: var(--font-sans);
+    }
+    .statut-dispo    { background: var(--or); color: var(--noir); }
+    .statut-compromis{ background: #e07b2a; color: #fff; }
+    .statut-vendu    { background: #555; color: #ccc; }
+    .bien-type-badge {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: rgba(12,12,12,0.78);
+      border: 1px solid rgba(201,169,110,0.3);
+      color: var(--or);
+      padding: 0.25rem 0.7rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-family: var(--font-sans);
+    }
+    .bien-body { padding: 1.6rem; }
+    .bien-ville {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--or);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .bien-ville svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink:0; }
+    .bien-titre {
+      font-family: var(--font-serif);
+      font-size: 1.35rem;
+      font-weight: 400;
+      color: var(--blanc);
+      margin-bottom: 0.7rem;
+      line-height: 1.25;
+    }
+    .bien-desc {
+      font-size: 0.83rem;
+      line-height: 1.75;
+      color: var(--gris-clair);
+      margin-bottom: 1.3rem;
+    }
+    .bien-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 1.1rem;
+      border-top: 1px solid rgba(201,169,110,0.12);
+    }
+    .bien-surface {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--gris-clair);
+      letter-spacing: 0.05em;
+    }
+    .bien-surface svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .bien-prix {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--or);
+    }
+    /* Responsive biens */
+    @media (max-width: 1050px) { .biens-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px)  { .biens-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 900px)  { #biens { padding: 5rem 1.5rem !important; } }
+
   </style>
 </head>
 <body>
 
 <!-- NAVBAR -->
 <nav id="navbar">
-  <a class="nav-logo" href="#">VG <span>PROGRAM</span></a>
+  <a class="nav-logo" href="#" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+    <svg width="28" height="22" viewBox="0 0 56 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="14" y="16" width="28" height="22" fill="none" stroke="#c9a96e" stroke-width="1"/>
+      <polygon points="28,4 6,18 50,18" fill="none" stroke="#c9a96e" stroke-width="1.2" stroke-linejoin="round"/>
+      <polygon points="28,8 12,18 44,18" fill="rgba(201,169,110,0.07)"/>
+      <rect x="19" y="21" width="5" height="6" fill="rgba(201,169,110,0.2)" stroke="#c9a96e" stroke-width="0.5"/>
+      <rect x="32" y="21" width="5" height="6" fill="rgba(201,169,110,0.2)" stroke="#c9a96e" stroke-width="0.5"/>
+      <rect x="23" y="30" width="10" height="8" fill="rgba(201,169,110,0.1)" stroke="#c9a96e" stroke-width="0.5"/>
+      <line x1="28" y1="4" x2="28" y2="8" stroke="#c9a96e" stroke-width="0.8"/>
+      <circle cx="28" cy="4" r="1.5" fill="#c9a96e"/>
+    </svg>
+    <div style="display:flex;flex-direction:column;line-height:1">
+      <span style="font-family:var(--font-serif);font-size:1.1rem;font-weight:400;letter-spacing:0.22em;color:var(--blanc)">VG</span>
+      <span style="font-family:var(--font-sans);font-size:0.52rem;font-weight:500;letter-spacing:0.55em;color:var(--or);text-transform:uppercase;margin-top:1px">PROGRAM</span>
+    </div>
+  </a>
   <ul class="nav-links">
     <li><a href="#approche">Notre approche</a></li>
     <li><a href="#services">Services</a></li>
+    <li><a href="#biens">Nos biens</a></li>
     <li><a href="#profil">Qui sommes-nous</a></li>
     <li><a href="#contact" class="nav-cta">Nous contacter</a></li>
   </ul>
@@ -855,6 +1155,40 @@
   </div>
 </section>
 
+<!-- ══════════════════════════════════════
+     NOS BIENS À LA COMMERCIALISATION
+     Pour modifier : éditez le tableau `biens` dans le JS
+     ══════════════════════════════════════ -->
+<section id="biens" style="background:var(--noir);padding:8rem 4rem;">
+  <div style="max-width:1300px;margin:0 auto;">
+
+    <!-- En-tête -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4rem;flex-wrap:wrap;gap:2rem;">
+      <div class="reveal">
+        <div class="section-label">À la commercialisation</div>
+        <h2 class="section-title">Nos biens<br><em>disponibles</em></h2>
+      </div>
+      <!-- Filtres -->
+      <div class="biens-filtres reveal" style="transition-delay:0.1s">
+        <button class="filtre-btn active" data-filtre="tous">Tous</button>
+        <button class="filtre-btn" data-filtre="maison">Maisons</button>
+        <button class="filtre-btn" data-filtre="appartement">Appartements</button>
+        <button class="filtre-btn" data-filtre="terrain">Terrains</button>
+        <button class="filtre-btn" data-filtre="local">Locaux</button>
+      </div>
+    </div>
+
+    <!-- Grille des biens -->
+    <div id="biens-grid" class="biens-grid reveal" style="transition-delay:0.15s"></div>
+
+    <!-- Message aucun résultat -->
+    <div id="biens-vide" style="display:none;text-align:center;padding:4rem 0;">
+      <p style="color:var(--gris);font-size:0.9rem;letter-spacing:0.1em;">Aucun bien dans cette catégorie actuellement.</p>
+    </div>
+
+  </div>
+</section>
+
 <!-- POURQUOI NOUS -->
 <section id="pourquoi">
   <div class="pourquoi-inner">
@@ -973,7 +1307,21 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-logo">VG <span>PROGRAM</span></div>
+  <div class="footer-logo" style="display:flex;align-items:center;gap:14px;">
+    <svg width="26" height="20" viewBox="0 0 56 44" fill="none">
+      <rect x="14" y="16" width="28" height="22" fill="none" stroke="#c9a96e" stroke-width="1"/>
+      <polygon points="28,4 6,18 50,18" fill="none" stroke="#c9a96e" stroke-width="1.2" stroke-linejoin="round"/>
+      <polygon points="28,8 12,18 44,18" fill="rgba(201,169,110,0.07)"/>
+      <rect x="19" y="21" width="5" height="6" fill="rgba(201,169,110,0.2)" stroke="#c9a96e" stroke-width="0.5"/>
+      <rect x="32" y="21" width="5" height="6" fill="rgba(201,169,110,0.2)" stroke="#c9a96e" stroke-width="0.5"/>
+      <rect x="23" y="30" width="10" height="8" fill="rgba(201,169,110,0.1)" stroke="#c9a96e" stroke-width="0.5"/>
+      <circle cx="28" cy="4" r="1.5" fill="#c9a96e"/>
+    </svg>
+    <div>
+      <div style="font-family:var(--font-serif);font-size:1.1rem;font-weight:400;letter-spacing:0.22em;color:var(--blanc)">VG <span style="color:var(--or)">PROGRAM</span></div>
+      <div style="font-family:var(--font-sans);font-size:0.58rem;letter-spacing:0.3em;color:var(--gris);text-transform:uppercase;margin-top:2px">Immobilier · Marchand de biens</div>
+    </div>
+  </div>
   <ul class="footer-links">
     <li><a href="#approche">Approche</a></li>
     <li><a href="#services">Services</a></li>
@@ -984,6 +1332,60 @@
 </footer>
 
 <script>
+  // ═══════════════════════════════════════════════════
+  //  NOS BIENS — modifiez ce tableau pour mettre à jour
+  //  Statuts possibles : "dispo" | "compromis" | "vendu"
+  //  Types possibles   : "maison" | "appartement" | "terrain" | "local"
+  // ═══════════════════════════════════════════════════
+  // Tableau vide — rempli en temps réel par Firebase Firestore
+  const biens = [];
+
+  const statutLabel = { dispo: "Disponible", compromis: "Sous compromis", vendu: "Vendu" };
+  const typeLabel   = { maison: "Maison", appartement: "Appartement", terrain: "Terrain", local: "Local" };
+
+  function renderBiens(filtre = "tous") {
+    const grid  = document.getElementById('biens-grid');
+    const vide  = document.getElementById('biens-vide');
+    const liste = filtre === "tous" ? biens : biens.filter(b => b.type === filtre);
+    if (liste.length === 0) {
+      grid.innerHTML = '';
+      vide.style.display = 'block';
+      return;
+    }
+    vide.style.display = 'none';
+    grid.innerHTML = liste.map(b => `
+      <div class="bien-card">
+        <div class="bien-photo">
+          <img src="${b.photo}" alt="${b.titre}" loading="lazy" />
+          <span class="bien-statut statut-${b.statut}">${statutLabel[b.statut]}</span>
+          <span class="bien-type-badge">${typeLabel[b.type]}</span>
+        </div>
+        <div class="bien-body">
+          <div class="bien-ville">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${b.ville}
+          </div>
+          <div class="bien-titre">${b.titre}</div>
+          <div class="bien-desc">${b.description}</div>
+          <div class="bien-meta">
+            <div class="bien-surface">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 3v18"/></svg>
+              ${b.surface}
+            </div>
+            <div class="bien-prix">${b.prix}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    // Réappliquer le hover curseur aux nouvelles cartes
+    document.querySelectorAll('.bien-card, .filtre-btn, .action-btn, .admin-btn, .admin-add-btn, .admin-close-btn').forEach(el => {
+      el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+    });
+  }
+
+  // Filtres et renderBiens gérés par le système admin Firebase
+
   // Navbar scroll
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
@@ -1016,6 +1418,2741 @@
       e.target.reset();
     }, 3000);
   }
+</script>
+
+<!-- ════════════════════════════════════════════════════
+     PANNEAU ADMIN VG PROGRAM
+     Accès : cliquer sur le logo footer 3× ou aller sur #admin
+     Mot de passe par défaut : vgpro2025
+════════════════════════════════════════════════════ -->
+
+<!-- Bouton trigger discret dans le footer (triple clic sur logo) -->
+<style>
+/* ── OVERLAY ADMIN ── */
+#admin-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(8,8,8,0.97);
+  backdrop-filter: blur(20px);
+  overflow-y: auto;
+  font-family: var(--font-sans);
+}
+#admin-overlay.open { display: block; }
+
+/* ── LOGIN ── */
+#admin-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+.admin-login-box {
+  background: var(--noir-doux);
+  border: 1px solid rgba(201,169,110,0.25);
+  padding: 3rem 2.5rem;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+.admin-login-box .admin-logo {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  letter-spacing: 0.2em;
+  color: var(--or);
+  margin-bottom: 0.3rem;
+}
+.admin-login-box .admin-sub {
+  font-size: 0.62rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gris);
+  margin-bottom: 2.5rem;
+}
+.admin-input {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(201,169,110,0.2);
+  color: var(--blanc);
+  padding: 0.9rem 1.1rem;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  outline: none;
+  margin-bottom: 1rem;
+  text-align: center;
+  letter-spacing: 0.15em;
+  transition: border-color 0.3s;
+}
+.admin-input:focus { border-color: var(--or); }
+.admin-input::placeholder { color: var(--gris); letter-spacing: 0.1em; }
+.admin-btn {
+  width: 100%;
+  background: var(--or);
+  color: var(--noir);
+  border: none;
+  padding: 0.9rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-weight: 500;
+  cursor: none;
+  transition: background 0.3s;
+  margin-bottom: 0.8rem;
+}
+.admin-btn:hover { background: var(--or-clair); }
+.admin-btn.danger {
+  background: transparent;
+  border: 1px solid rgba(220,80,80,0.4);
+  color: #e06060;
+  margin-top: 0.3rem;
+}
+.admin-btn.danger:hover { background: rgba(220,80,80,0.1); }
+.admin-btn.secondary {
+  background: transparent;
+  border: 1px solid rgba(201,169,110,0.25);
+  color: var(--gris-clair);
+}
+.admin-btn.secondary:hover { border-color: var(--or); color: var(--or); }
+#admin-login-error {
+  color: #e06060;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  margin-top: 0.5rem;
+  min-height: 1.2em;
+}
+
+/* ── DASHBOARD ── */
+#admin-dashboard { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+#admin-dashboard.visible { display: block; }
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(201,169,110,0.15);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.admin-header-left .admin-logo { font-family: var(--font-serif); font-size: 1.4rem; color: var(--or); letter-spacing: 0.15em; }
+.admin-header-left p { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gris); margin-top: 0.2rem; }
+.admin-header-right { display: flex; gap: 0.8rem; align-items: center; }
+.admin-close-btn {
+  background: transparent;
+  border: 1px solid rgba(201,169,110,0.2);
+  color: var(--gris-clair);
+  padding: 0.5rem 1.2rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: none;
+  transition: all 0.3s;
+  font-family: var(--font-sans);
+}
+.admin-close-btn:hover { border-color: var(--or); color: var(--or); }
+
+/* Compteurs */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+.admin-stat {
+  background: var(--noir-doux);
+  border: 1px solid rgba(201,169,110,0.1);
+  padding: 1.2rem 1.5rem;
+  text-align: center;
+}
+.admin-stat-num { font-family: var(--font-serif); font-size: 2rem; color: var(--or); line-height: 1; }
+.admin-stat-label { font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gris); margin-top: 0.3rem; }
+
+/* Toolbar */
+.admin-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.admin-toolbar-title { font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gris-clair); }
+.admin-add-btn {
+  background: var(--or);
+  color: var(--noir);
+  border: none;
+  padding: 0.6rem 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+  cursor: none;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.admin-add-btn:hover { background: var(--or-clair); }
+
+/* Tableau des biens */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+.admin-table th {
+  text-align: left;
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gris);
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(201,169,110,0.15);
+  font-weight: 400;
+}
+.admin-table td {
+  padding: 1rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.83rem;
+  color: var(--gris-clair);
+  vertical-align: middle;
+}
+.admin-table tr:hover td { background: rgba(201,169,110,0.03); }
+.admin-table .td-titre { color: var(--blanc); font-weight: 400; }
+.admin-table .td-prix { color: var(--or); font-family: var(--font-serif); font-size: 1rem; }
+.td-statut span {
+  padding: 0.2rem 0.7rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.td-actions { display: flex; gap: 0.5rem; }
+.action-btn {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: none;
+  cursor: none;
+  font-family: var(--font-sans);
+  transition: all 0.25s;
+}
+.action-edit { background: rgba(201,169,110,0.12); color: var(--or); border: 1px solid rgba(201,169,110,0.2); }
+.action-edit:hover { background: rgba(201,169,110,0.25); }
+.action-del { background: rgba(220,80,80,0.08); color: #e06060; border: 1px solid rgba(220,80,80,0.2); }
+.action-del:hover { background: rgba(220,80,80,0.18); }
+
+/* ── MODAL ÉDITION ── */
+#admin-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+#admin-modal.open { display: flex; }
+.modal-box {
+  background: var(--noir-doux);
+  border: 1px solid rgba(201,169,110,0.25);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--blanc);
+  margin-bottom: 2rem;
+  letter-spacing: 0.05em;
+}
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.modal-grid .full { grid-column: 1 / -1; }
+.form-field { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-field label { font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gris); }
+.form-field input,
+.form-field select,
+.form-field textarea {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(201,169,110,0.2);
+  color: var(--blanc);
+  padding: 0.75rem 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.3s;
+  font-weight: 300;
+}
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus { border-color: var(--or); }
+.form-field select { cursor: none; }
+.form-field select option { background: #1a1a1a; }
+.form-field textarea { height: 90px; resize: none; }
+.modal-actions { display: flex; gap: 0.8rem; margin-top: 2rem; justify-content: flex-end; }
+.modal-preview {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  margin-top: 0.5rem;
+  border: 1px solid rgba(201,169,110,0.15);
+  display: none;
+}
+.modal-preview.show { display: block; }
+
+/* Mdp change */
+.admin-section-title {
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gris);
+  margin: 2.5rem 0 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(201,169,110,0.1);
+}
+
+/* Responsive admin */
+@media (max-width: 700px) {
+  .admin-stats { grid-template-columns: repeat(2,1fr); }
+  .modal-grid { grid-template-columns: 1fr; }
+  .admin-table th:nth-child(3),
+  .admin-table td:nth-child(3),
+  .admin-table th:nth-child(4),
+  .admin-table td:nth-child(4) { display: none; }
+}
+</style>
+
+<!-- OVERLAY ADMIN -->
+<div id="admin-overlay">
+
+  <!-- ÉCRAN LOGIN -->
+  <div id="admin-login">
+    <div class="admin-login-box">
+      <div class="admin-logo">VG PROGRAM</div>
+      <div class="admin-sub">Espace administration</div>
+      <input class="admin-input" id="admin-pwd-input" type="password" placeholder="Mot de passe" autocomplete="current-password" />
+      <button class="admin-btn" onclick="adminLogin()">Accéder</button>
+      <button class="admin-btn secondary" onclick="closeAdmin()">Annuler</button>
+      <div id="admin-login-error"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="admin-dashboard">
+    <div class="admin-header">
+      <div class="admin-header-left">
+        <div class="admin-logo">VG PROGRAM — Admin</div>
+        <p>Gestion des biens à la commercialisation</p>
+      </div>
+      <div class="admin-header-right">
+        <button class="admin-close-btn" onclick="closeAdmin()">✕ Fermer</button>
+      </div>
+    </div>
+
+    <!-- Stats rapides -->
+    <div class="admin-stats" id="admin-stats"></div>
+
+    <!-- Tableau -->
+    <div class="admin-toolbar">
+      <div class="admin-toolbar-title">Biens enregistrés</div>
+      <button class="admin-add-btn" onclick="openModal()">+ Ajouter un bien</button>
+    </div>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Type</th>
+          <th>Ville</th>
+          <th>Surface</th>
+          <th>Prix</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="admin-tbody"></tbody>
+    </table>
+
+    <!-- Changer mot de passe -->
+    <div class="admin-section-title">Sécurité</div>
+    <div style="display:flex;gap:0.8rem;flex-wrap:wrap;align-items:flex-end;">
+      <div class="form-field" style="flex:1;min-width:180px;">
+        <label>Nouveau mot de passe</label>
+        <input type="password" id="new-pwd1" class="admin-input" style="margin:0;text-align:left;letter-spacing:0.05em;" placeholder="Nouveau mot de passe" />
+      </div>
+      <div class="form-field" style="flex:1;min-width:180px;">
+        <label>Confirmer</label>
+        <input type="password" id="new-pwd2" class="admin-input" style="margin:0;text-align:left;letter-spacing:0.05em;" placeholder="Confirmer" />
+      </div>
+      <button class="admin-btn" style="width:auto;padding:0.9rem 1.5rem;margin:0;" onclick="changePwd()">Enregistrer</button>
+    </div>
+    <div id="pwd-msg" style="font-size:0.75rem;margin-top:0.6rem;min-height:1.2em;"></div>
+  </div>
+</div>
+
+<!-- MODAL ÉDITION / AJOUT -->
+<div id="admin-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Ajouter un bien</div>
+    <div class="modal-grid">
+      <div class="form-field full">
+        <label>Titre du bien</label>
+        <input type="text" id="f-titre" placeholder="Ex : Maison T4 avec jardin" />
+      </div>
+      <div class="form-field">
+        <label>Type</label>
+        <select id="f-type">
+          <option value="maison">Maison</option>
+          <option value="appartement">Appartement</option>
+          <option value="terrain">Terrain</option>
+          <option value="local">Local commercial / industriel</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Statut</label>
+        <select id="f-statut">
+          <option value="dispo">Disponible</option>
+          <option value="compromis">Sous compromis</option>
+          <option value="vendu">Vendu</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Ville</label>
+        <input type="text" id="f-ville" placeholder="Ex : Roanne (42300)" />
+      </div>
+      <div class="form-field">
+        <label>Surface</label>
+        <input type="text" id="f-surface" placeholder="Ex : 112 m²" />
+      </div>
+      <div class="form-field full">
+        <label>Prix</label>
+        <input type="text" id="f-prix" placeholder="Ex : 189 000 €" />
+      </div>
+      <div class="form-field full">
+        <label>Description</label>
+        <textarea id="f-desc" placeholder="Décrivez le bien en quelques lignes..."></textarea>
+      </div>
+      <div class="form-field full">
+        <label>URL de la photo</label>
+        <input type="text" id="f-photo" placeholder="https://..." oninput="previewPhoto(this.value)" />
+        <img id="modal-img-preview" class="modal-preview" alt="Aperçu" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="action-btn action-del" onclick="closeModal()">Annuler</button>
+      <button class="admin-btn" style="width:auto;padding:0.7rem 2rem;margin:0;" onclick="saveBien()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+//  SYSTÈME ADMIN VG PROGRAM — Firebase
+// ════════════════════════════════════════
+const STORAGE_KEY_PWD = 'vgp_pwd';
+const DEFAULT_PWD     = 'vgpro2025';
+
+function getPwd() { return localStorage.getItem(STORAGE_KEY_PWD) || DEFAULT_PWD; }
+
+// ── OUVERTURE / FERMETURE ──
+let adminUnlocked = false;
+let editIndex = -1;
+window._adminOpen = false;
+window._filtreActif = 'tous';
+
+function openAdmin() {
+  window._adminOpen = true;
+  document.getElementById('admin-overlay').classList.add('open');
+  document.getElementById('admin-login').style.display = 'flex';
+  document.getElementById('admin-dashboard').classList.remove('visible');
+  document.getElementById('admin-pwd-input').value = '';
+  document.getElementById('admin-login-error').textContent = '';
+  setTimeout(() => document.getElementById('admin-pwd-input').focus(), 100);
+}
+
+function closeAdmin() {
+  window._adminOpen = false;
+  document.getElementById('admin-overlay').classList.remove('open');
+  adminUnlocked = false;
+}
+
+function adminLogin() {
+  const val = document.getElementById('admin-pwd-input').value;
+  if (val === getPwd()) {
+    document.getElementById('admin-login').style.display = 'none';
+    document.getElementById('admin-dashboard').classList.add('visible');
+    renderAdminStats();
+    renderAdminTable();
+    adminUnlocked = true;
+  } else {
+    const err = document.getElementById('admin-login-error');
+    err.textContent = 'Mot de passe incorrect.';
+    document.getElementById('admin-pwd-input').value = '';
+    setTimeout(() => { err.textContent = ''; }, 2500);
+  }
+}
+
+document.getElementById('admin-pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') adminLogin();
+});
+
+// ── STATS ──
+function renderAdminStats() {
+  const total     = biens.length;
+  const dispo     = biens.filter(b => b.statut === 'dispo').length;
+  const compromis = biens.filter(b => b.statut === 'compromis').length;
+  const vendu     = biens.filter(b => b.statut === 'vendu').length;
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="admin-stat"><div class="admin-stat-num">${total}</div><div class="admin-stat-label">Total</div></div>
+    <div class="admin-stat"><div class="admin-stat-num" style="color:#c9a96e">${dispo}</div><div class="admin-stat-label">Disponibles</div></div>
+    <div class="admin-stat"><div class="admin-stat-num" style="color:#e07b2a">${compromis}</div><div class="admin-stat-label">Sous compromis</div></div>
+    <div class="admin-stat"><div class="admin-stat-num" style="color:#777">${vendu}</div><div class="admin-stat-label">Vendus</div></div>
+  `;
+}
+
+// ── TABLEAU ──
+const statutColors   = { dispo:'background:rgba(201,169,110,0.15);color:#c9a96e', compromis:'background:rgba(224,123,42,0.15);color:#e07b2a', vendu:'background:rgba(100,100,100,0.2);color:#888' };
+const typeLabelsAdmin= { maison:'Maison', appartement:'Appartement', terrain:'Terrain', local:'Local' };
+
+function renderAdminTable() {
+  const tbody = document.getElementById('admin-tbody');
+  if (biens.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--gris);padding:3rem;font-size:0.85rem;">Aucun bien — cliquez sur "+ Ajouter"</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = biens.map((b, i) => `
+    <tr>
+      <td class="td-titre">${b.titre}</td>
+      <td>${typeLabelsAdmin[b.type] || b.type}</td>
+      <td>${b.ville}</td>
+      <td>${b.surface}</td>
+      <td class="td-prix">${b.prix}</td>
+      <td class="td-statut"><span style="${statutColors[b.statut]};padding:0.2rem 0.7rem;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;">${statutLabel[b.statut]}</span></td>
+      <td><div class="td-actions">
+        <button class="action-btn action-edit" onclick="openModal(${i})">Modifier</button>
+        <button class="action-btn action-del"  onclick="deleteBien(${i})">Supprimer</button>
+      </div></td>
+    </tr>
+  `).join('');
+}
+
+// ── MODAL ──
+function openModal(index = -1) {
+  editIndex = index;
+  document.getElementById('modal-title').textContent = index === -1 ? 'Ajouter un bien' : 'Modifier le bien';
+  const b = index === -1
+    ? { titre:'', type:'maison', statut:'dispo', ville:'', surface:'', prix:'', description:'', photo:'' }
+    : biens[index];
+  document.getElementById('f-titre').value   = b.titre || '';
+  document.getElementById('f-type').value    = b.type  || 'maison';
+  document.getElementById('f-statut').value  = b.statut|| 'dispo';
+  document.getElementById('f-ville').value   = b.ville || '';
+  document.getElementById('f-surface').value = b.surface || '';
+  document.getElementById('f-prix').value    = b.prix  || '';
+  document.getElementById('f-desc').value    = b.description || '';
+  document.getElementById('f-photo').value   = b.photo || '';
+  previewPhoto(b.photo || '');
+  document.getElementById('admin-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('admin-modal').classList.remove('open');
+  editIndex = -1;
+}
+
+function previewPhoto(url) {
+  const img = document.getElementById('modal-img-preview');
+  if (url && url.startsWith('http')) { img.src = url; img.classList.add('show'); }
+  else { img.classList.remove('show'); }
+}
+
+// ── SAUVEGARDER (Firebase) ──
+async function saveBien() {
+  const b = {
+    titre      : document.getElementById('f-titre').value.trim(),
+    type       : document.getElementById('f-type').value,
+    statut     : document.getElementById('f-statut').value,
+    ville      : document.getElementById('f-ville').value.trim(),
+    surface    : document.getElementById('f-surface').value.trim(),
+    prix       : document.getElementById('f-prix').value.trim(),
+    description: document.getElementById('f-desc').value.trim(),
+    photo      : document.getElementById('f-photo').value.trim(),
+  };
+  if (!b.titre || !b.ville || !b.prix) { alert('Titre, ville et prix sont obligatoires.'); return; }
+
+  const btn = document.querySelector('#admin-modal .admin-btn:last-child');
+  btn.textContent = 'Enregistrement…';
+  btn.disabled = true;
+
+  try {
+    if (editIndex === -1) {
+      await window._fb.add(b);
+    } else {
+      const id = biens[editIndex]._id;
+      const { _id, createdAt, ...data } = b;
+      await window._fb.update(id, data);
+    }
+    closeModal();
+  } catch(e) {
+    alert('Erreur Firebase : ' + e.message);
+  } finally {
+    btn.textContent = 'Enregistrer';
+    btn.disabled = false;
+  }
+}
+
+// ── SUPPRIMER (Firebase) ──
+async function deleteBien(i) {
+  if (!confirm(`Supprimer "${biens[i].titre}" ?`)) return;
+  try { await window._fb.remove(biens[i]._id); }
+  catch(e) { alert('Erreur : ' + e.message); }
+}
+
+// ── CHANGER MOT DE PASSE ──
+function changePwd() {
+  const p1  = document.getElementById('new-pwd1').value;
+  const p2  = document.getElementById('new-pwd2').value;
+  const msg = document.getElementById('pwd-msg');
+  if (!p1)        { msg.style.color='#e06060'; msg.textContent='Le mot de passe ne peut pas être vide.'; return; }
+  if (p1 !== p2)  { msg.style.color='#e06060'; msg.textContent='Les mots de passe ne correspondent pas.'; return; }
+  if (p1.length < 6){ msg.style.color='#e06060'; msg.textContent='Minimum 6 caractères.'; return; }
+  localStorage.setItem(STORAGE_KEY_PWD, p1);
+  msg.style.color='#4caf50'; msg.textContent='Mot de passe mis à jour ✓';
+  document.getElementById('new-pwd1').value = '';
+  document.getElementById('new-pwd2').value = '';
+  setTimeout(() => { msg.textContent=''; }, 3000);
+}
+
+// ── TRIGGER DISCRET : triple clic sur logo footer ──
+let clickCount = 0, clickTimer;
+document.querySelector('.footer-logo').addEventListener('click', () => {
+  clickCount++;
+  clearTimeout(clickTimer);
+  clickTimer = setTimeout(() => { clickCount = 0; }, 600);
+  if (clickCount >= 3) { clickCount = 0; openAdmin(); }
+});
+
+// ── Filtres ──
+document.querySelectorAll('.filtre-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filtre-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    window._filtreActif = btn.dataset.filtre;
+    renderBiens(btn.dataset.filtre);
+  });
+});
+
+// ── Fermer modal en cliquant à l'extérieur ──
+document.getElementById('admin-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── Indicateur de chargement initial ──
+document.getElementById('biens-grid').innerHTML = `
+  <div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--gris);">
+    <div style="font-size:0.75rem;letter-spacing:0.25em;text-transform:uppercase;">Chargement des biens…</div>
+  </div>`;t" content="width=device-width, initial-scale=1.0" />
+  <title>VG PROGRAM – Marchand de Biens</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, orderBy, query }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBqWSxNsmfH1WEjC5GPME7me01fJgFg0AU",
+      authDomain: "vg-program-3c750.firebaseapp.com",
+      projectId: "vg-program-3c750",
+      storageBucket: "vg-program-3c750.firebasestorage.app",
+      messagingSenderId: "961802200405",
+      appId: "1:961802200405:web:1a73a68f023f754201fbdc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const biensCol = collection(db, "biens");
+
+    window._fb = {
+      listen() {
+        const q = query(biensCol, orderBy("createdAt", "asc"));
+        onSnapshot(q, (snap) => {
+          biens.length = 0;
+          snap.forEach(d => biens.push({ _id: d.id, ...d.data() }));
+          renderBiens(window._filtreActif || "tous");
+          if (window._adminOpen) { renderAdminStats(); renderAdminTable(); }
+        });
+      },
+      async add(b)       { b.createdAt = Date.now(); await addDoc(biensCol, b); },
+      async update(id, b){ await updateDoc(doc(db, "biens", id), b); },
+      async remove(id)   { await deleteDoc(doc(db, "biens", id)); }
+    };
+
+    window._fb.listen();
+  <\/script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* ── Palette VG PROGRAM ── */
+      --noir: #0c0c0c;
+      --noir-doux: #141416;
+      --acier: #1a1c20;
+      --or: #c9a96e;
+      --or-clair: #e8d5a8;
+      --or-pale: #f5eed8;
+      --blanc: #f5f2ed;
+      --ivoire: #f0ede7;
+      --gris: #9a9590;
+      --gris-clair: #c4c0b8;
+      --gris-pierre: #6b6760;
+      --texte: #d4cfc8;
+      /* ── Typographie ── */
+      --font-serif: 'Cormorant Garamond', 'Georgia', serif;
+      --font-sans: 'Outfit', 'Arial Narrow', sans-serif;
+      /* ── Espacements ── */
+      --sp-xs: 4px; --sp-s: 8px; --sp-m: 16px; --sp-l: 24px;
+      --sp-xl: 48px; --sp-2xl: 96px;
+      /* ── Traits ── */
+      --border-or: 1px solid rgba(201,169,110,0.25);
+      --border-or-fort: 1px solid rgba(201,169,110,0.6);
+      --border-or-pale: 1px solid rgba(201,169,110,0.12);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--noir);
+      color: var(--texte);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAVBAR ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.4rem 4rem;
+      transition: background 0.4s, backdrop-filter 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,169,110,0.15);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--or);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--blanc); }
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--gris-clair);
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--or); }
+    .nav-cta {
+      background: transparent;
+      border: 1px solid var(--or);
+      color: var(--or) !important;
+      padding: 0.55rem 1.4rem !important;
+      transition: background 0.3s, color 0.3s !important;
+    }
+    .nav-cta:hover {
+      background: var(--or) !important;
+      color: var(--noir) !important;
+    }
+
+    /* ─── HERO ─── */
+    #hero {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(13,13,13,0.92) 0%, rgba(13,13,13,0.55) 50%, rgba(13,13,13,0.85) 100%),
+        url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1800&q=80') center/cover no-repeat;
+    }
+    .hero-grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(201,169,110,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,169,110,0.04) 1px, transparent 1px);
+      background-size: 80px 80px;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 0 4rem;
+      max-width: 900px;
+      animation: fadeUp 1.2s ease both;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--or);
+      margin-bottom: 2rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      width: 40px;
+      height: 1px;
+      background: var(--or);
+    }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 7vw, 6.5rem);
+      font-weight: 300;
+      line-height: 1.05;
+      color: var(--blanc);
+      margin-bottom: 1.5rem;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--or);
+    }
+    .hero-sub {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: var(--gris-clair);
+      max-width: 520px;
+      margin-bottom: 3rem;
+    }
+    .hero-location {
+      font-size: 0.72rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-bottom: 2.5rem;
+    }
+    .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--or);
+      color: var(--noir);
+      padding: 1rem 2.5rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .btn-primary:hover { background: var(--or-clair); transform: translateY(-2px); }
+    .btn-outline {
+      border: 1px solid rgba(201,169,110,0.5);
+      color: var(--or);
+      padding: 1rem 2.5rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      font-weight: 400;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .btn-outline:hover { border-color: var(--or); background: rgba(201,169,110,0.08); }
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gris);
+      animation: bounce 2s infinite;
+    }
+    .hero-scroll::after {
+      content: '';
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(var(--or), transparent);
+    }
+
+    /* ─── STATS BAND ─── */
+    .stats-band {
+      background: var(--noir-doux);
+      border-top: 1px solid rgba(201,169,110,0.2);
+      border-bottom: 1px solid rgba(201,169,110,0.2);
+      display: flex;
+      justify-content: center;
+      gap: 0;
+    }
+    .stat-item {
+      padding: 3rem 4rem;
+      text-align: center;
+      border-right: 1px solid rgba(201,169,110,0.12);
+      flex: 1;
+      max-width: 280px;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.5rem;
+      font-weight: 300;
+      color: var(--or);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-top: 0.5rem;
+    }
+
+    /* ─── SECTION GÉNÉRIQUE ─── */
+    section { padding: 8rem 4rem; }
+    .section-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--or);
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 300;
+      color: var(--blanc);
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+    }
+    .section-title em { font-style: italic; color: var(--or); }
+    .section-text {
+      font-size: 0.92rem;
+      line-height: 1.9;
+      color: var(--gris-clair);
+      max-width: 560px;
+    }
+
+    /* ─── APPROCHE ─── */
+    #approche {
+      background: var(--noir-doux);
+      position: relative;
+      overflow: hidden;
+    }
+    #approche::before {
+      content: 'IMMOBILIER';
+      position: absolute;
+      top: 50%;
+      left: -2rem;
+      transform: translateY(-50%) rotate(-90deg);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 8rem;
+      font-weight: 600;
+      color: rgba(201,169,110,0.04);
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: 0.2em;
+    }
+    .approche-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .approche-image {
+      position: relative;
+    }
+    .approche-image img {
+      width: 100%;
+      height: 580px;
+      object-fit: cover;
+      display: block;
+    }
+    .approche-image::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: -20px;
+      right: 20px;
+      bottom: 20px;
+      border: 1px solid rgba(201,169,110,0.25);
+      z-index: -1;
+    }
+    .approche-image .img-badge {
+      position: absolute;
+      bottom: -1.5rem;
+      right: -1.5rem;
+      background: var(--or);
+      color: var(--noir);
+      padding: 1.5rem 2rem;
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .approche-image .img-badge strong {
+      display: block;
+      font-size: 2.2rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+    .approche-image .img-badge span {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* ─── SERVICES ─── */
+    #services {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 8rem 4rem;
+    }
+    .services-intro {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 5rem;
+      gap: 3rem;
+    }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5px;
+      background: rgba(201,169,110,0.15);
+    }
+    .service-card {
+      background: var(--noir);
+      padding: 3rem 2.5rem;
+      transition: background 0.3s;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--or);
+      transition: width 0.4s ease;
+    }
+    .service-card:hover { background: var(--noir-doux); }
+    .service-card:hover::after { width: 100%; }
+    .service-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 2rem;
+      color: var(--or);
+    }
+    .service-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 1.2; }
+    .service-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--blanc);
+      margin-bottom: 1rem;
+    }
+    .service-card p {
+      font-size: 0.88rem;
+      line-height: 1.8;
+      color: var(--gris-clair);
+    }
+
+    /* ─── PROFIL ─── */
+    #profil {
+      background:
+        linear-gradient(to right, rgba(13,13,13,1) 50%, rgba(13,13,13,0.6) 100%),
+        url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&q=80') right center/cover no-repeat;
+      padding: 10rem 4rem;
+    }
+    .profil-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+    }
+    .profil-content { max-width: 560px; }
+    .profil-text {
+      font-size: 0.92rem;
+      line-height: 1.95;
+      color: var(--gris-clair);
+      margin-bottom: 1.5rem;
+    }
+    .profil-quote {
+      border-left: 2px solid var(--or);
+      padding-left: 1.5rem;
+      margin: 2.5rem 0;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.3rem;
+      color: var(--or-clair);
+      line-height: 1.6;
+    }
+
+    /* ─── POURQUOI NOUS ─── */
+    #pourquoi {
+      background: var(--noir-doux);
+      padding: 8rem 4rem;
+    }
+    .pourquoi-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .pourquoi-header {
+      text-align: center;
+      margin-bottom: 5rem;
+    }
+    .raisons-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3rem;
+      margin-top: 4rem;
+    }
+    .raison {
+      text-align: center;
+      padding: 3rem 2rem;
+      position: relative;
+    }
+    .raison-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem;
+      font-weight: 300;
+      color: rgba(201,169,110,0.1);
+      line-height: 1;
+      position: absolute;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .raison-icon {
+      width: 56px;
+      height: 56px;
+      border: 1px solid rgba(201,169,110,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      color: var(--or);
+      position: relative;
+      z-index: 1;
+    }
+    .raison-icon svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .raison h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--blanc);
+      margin-bottom: 0.8rem;
+      position: relative;
+      z-index: 1;
+    }
+    .raison p {
+      font-size: 0.86rem;
+      line-height: 1.8;
+      color: var(--gris-clair);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── OFFRE 48H ─── */
+    .offre-banner {
+      background: var(--or);
+      color: var(--noir);
+      padding: 5rem 4rem;
+      text-align: center;
+    }
+    .offre-banner h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+    }
+    .offre-banner p {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      opacity: 0.85;
+    }
+    .btn-dark {
+      display: inline-block;
+      background: var(--noir);
+      color: var(--or);
+      padding: 1rem 3rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+    .btn-dark:hover { background: #222; }
+
+    /* ─── CONTACT ─── */
+    #contact {
+      padding: 8rem 4rem;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 6rem;
+      align-items: start;
+    }
+    .contact-info h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.8rem;
+      font-weight: 300;
+      color: var(--blanc);
+      margin-bottom: 0.5rem;
+    }
+    .contact-info .tagline {
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      color: var(--or);
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+    }
+    .contact-detail {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      margin-bottom: 1.8rem;
+    }
+    .contact-detail-icon {
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(201,169,110,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--or);
+      flex-shrink: 0;
+    }
+    .contact-detail-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .contact-detail-text .label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-bottom: 0.25rem;
+    }
+    .contact-detail-text .value {
+      font-size: 0.92rem;
+      color: var(--gris-clair);
+    }
+    .contact-detail-text a {
+      color: var(--or);
+      text-decoration: none;
+    }
+    /* Form */
+    .contact-form { display: flex; flex-direction: column; gap: 1.2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gris);
+    }
+    .form-group input,
+    .form-group textarea {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(201,169,110,0.2);
+      color: var(--blanc);
+      padding: 0.9rem 1.2rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.3s;
+      resize: none;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus { border-color: var(--or); }
+    .form-group textarea { height: 130px; }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: var(--gris); }
+    .btn-submit {
+      background: var(--or);
+      color: var(--noir);
+      border: none;
+      padding: 1.1rem 3rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+      align-self: flex-start;
+    }
+    .btn-submit:hover { background: var(--or-clair); transform: translateY(-2px); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--noir-doux);
+      border-top: 1px solid rgba(201,169,110,0.15);
+      padding: 2.5rem 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--or);
+    }
+    .footer-logo span { color: var(--gris); }
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .footer-links a {
+      text-decoration: none;
+      color: var(--gris);
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      transition: color 0.3s;
+    }
+    .footer-links a:hover { color: var(--or); }
+    .footer-copy {
+      font-size: 0.72rem;
+      color: var(--gris);
+    }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(201,169,110,0.2);
+    }
+    .divider-diamond {
+      width: 6px; height: 6px;
+      background: var(--or);
+      transform: rotate(45deg);
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(8px); }
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      section { padding: 5rem 1.5rem; }
+      #hero { padding: 0; }
+      .hero-content { padding: 0 1.5rem; }
+      .approche-grid, .profil-inner, .contact-grid, .raisons-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .services-grid { grid-template-columns: 1fr; }
+      .stats-band { flex-wrap: wrap; }
+      .stat-item { border-right: none; border-bottom: 1px solid rgba(201,169,110,0.12); max-width: 100%; padding: 2rem; }
+      .form-row { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+      .approche-image img { height: 320px; }
+      .services-intro { flex-direction: column; }
+    }
+
+    /* ════════════════════════════════
+       CHARTE GRAPHIQUE VG PROGRAM
+       Mise à jour identité visuelle
+    ════════════════════════════════ */
+
+    /* Logo nav overrides */
+    .nav-logo { text-decoration: none !important; }
+
+    /* Trait signature or sous les titres de section */
+    .section-label::after {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: var(--or);
+      margin-top: 8px;
+      opacity: 0.7;
+    }
+
+    /* Raffinement navbar */
+    nav { padding: 1.2rem 3.5rem; }
+    nav.scrolled { background: rgba(12,12,12,0.94); backdrop-filter: blur(16px); }
+
+    /* Hero eyebrow refiné */
+    .hero-eyebrow {
+      font-family: var(--font-sans);
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+    }
+
+    /* Typographie section titles */
+    .section-title {
+      font-family: var(--font-serif);
+      letter-spacing: 0.01em;
+    }
+
+    /* Stats band — couleur fond + séparateurs */
+    .stats-band { background: var(--acier); }
+    .stat-num { font-family: var(--font-serif); }
+
+    /* Service cards — border top or au hover */
+    .service-card {
+      border-top: 2px solid transparent;
+      transition: background 0.3s, border-top-color 0.3s;
+    }
+    .service-card:hover { border-top-color: var(--or); }
+
+    /* Raison items — cadre or léger */
+    .raison { border: var(--border-or-pale); }
+    .raison:hover { border-color: rgba(201,169,110,0.2); }
+
+    /* Quote styling */
+    .profil-quote {
+      border-left: 1.5px solid var(--or);
+      background: rgba(201,169,110,0.04);
+      padding: 1.2rem 1.5rem;
+    }
+
+    /* Offre banner — fond or pur */
+    .offre-banner {
+      background: var(--or);
+      position: relative;
+      overflow: hidden;
+    }
+    .offre-banner::before {
+      content: 'VG';
+      position: absolute;
+      right: 4rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-serif);
+      font-size: 14rem;
+      font-weight: 300;
+      color: rgba(0,0,0,0.06);
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    /* Contact detail icons — carré or */
+    .contact-detail-icon { background: rgba(201,169,110,0.06); }
+
+    /* Inputs focus */
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--or);
+      background: rgba(201,169,110,0.03);
+    }
+
+    /* Footer refinement */
+    footer { background: var(--noir); border-top: var(--border-or-pale); }
+
+    /* Divider diamond */
+    .divider-diamond { background: var(--or); width: 5px; height: 5px; }
+    .divider::before, .divider::after { background: rgba(201,169,110,0.18); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--noir); }
+    ::-webkit-scrollbar-thumb { background: rgba(201,169,110,0.3); border-radius: 2px; }
+
+    /* Selection */
+    ::selection { background: rgba(201,169,110,0.25); color: var(--blanc); }
+
+    /* ─── SECTION BIENS ─── */
+    .biens-filtres {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .filtre-btn {
+      background: transparent;
+      border: 1px solid rgba(201,169,110,0.25);
+      color: var(--gris-clair);
+      padding: 0.5rem 1.3rem;
+      font-family: var(--font-sans);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: none;
+      transition: all 0.3s;
+    }
+    .filtre-btn:hover, .filtre-btn.active {
+      background: var(--or);
+      border-color: var(--or);
+      color: var(--noir);
+    }
+    .biens-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .bien-card {
+      background: var(--noir-doux);
+      border: 1px solid rgba(201,169,110,0.1);
+      overflow: hidden;
+      transition: border-color 0.35s, transform 0.35s;
+      position: relative;
+    }
+    .bien-card:hover {
+      border-color: rgba(201,169,110,0.45);
+      transform: translateY(-4px);
+    }
+    .bien-photo {
+      position: relative;
+      overflow: hidden;
+      height: 220px;
+    }
+    .bien-photo img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+      display: block;
+    }
+    .bien-card:hover .bien-photo img { transform: scale(1.05); }
+    .bien-statut {
+      position: absolute;
+      top: 1rem; left: 1rem;
+      padding: 0.3rem 0.85rem;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 500;
+      font-family: var(--font-sans);
+    }
+    .statut-dispo    { background: var(--or); color: var(--noir); }
+    .statut-compromis{ background: #e07b2a; color: #fff; }
+    .statut-vendu    { background: #555; color: #ccc; }
+    .bien-type-badge {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: rgba(12,12,12,0.78);
+      border: 1px solid rgba(201,169,110,0.3);
+      color: var(--or);
+      padding: 0.25rem 0.7rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-family: var(--font-sans);
+    }
+    .bien-body { padding: 1.6rem; }
+    .bien-ville {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--or);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .bien-ville svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink:0; }
+    .bien-titre {
+      font-family: var(--font-serif);
+      font-size: 1.35rem;
+      font-weight: 400;
+      color: var(--blanc);
+      margin-bottom: 0.7rem;
+      line-height: 1.25;
+    }
+    .bien-desc {
+      font-size: 0.83rem;
+      line-height: 1.75;
+      color: var(--gris-clair);
+      margin-bottom: 1.3rem;
+    }
+    .bien-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 1.1rem;
+      border-top: 1px solid rgba(201,169,110,0.12);
+    }
+    .bien-surface {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--gris-clair);
+      letter-spacing: 0.05em;
+    }
+    .bien-surface svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+    .bien-prix {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--or);
+    }
+    /* Responsive biens */
+    @media (max-width: 1050px) { .biens-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px)  { .biens-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 900px)  { #biens { padding: 5rem 1.5rem !important; } }
+
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <a class="nav-logo" href="#" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+    <svg width="28" height="22" viewBox="0 0 56 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="14" y="16" width="28" height="22" fill="none" stroke="#c9a96e" stroke-width="1"/>
+      <polygon points="28,4 6,18 50,18" fill="none" stroke="#c9a96e" stroke-width="1.2" stroke-linejoin="round"/>
+      <polygon points="28,8 12,18 44,18" fill="rgba(201,169,110,0.07)"/>
+      <rect x="19" y="21" width="5" height="6" fill="rgba(201,169,110,0.2)" stroke="#c9a96e" stroke-width="0.5"/>
+      <rect x="32" y="21" width="5" height="6" fill="rgba(201,169,110,0.2)" stroke="#c9a96e" stroke-width="0.5"/>
+      <rect x="23" y="30" width="10" height="8" fill="rgba(201,169,110,0.1)" stroke="#c9a96e" stroke-width="0.5"/>
+      <line x1="28" y1="4" x2="28" y2="8" stroke="#c9a96e" stroke-width="0.8"/>
+      <circle cx="28" cy="4" r="1.5" fill="#c9a96e"/>
+    </svg>
+    <div style="display:flex;flex-direction:column;line-height:1">
+      <span style="font-family:var(--font-serif);font-size:1.1rem;font-weight:400;letter-spacing:0.22em;color:var(--blanc)">VG</span>
+      <span style="font-family:var(--font-sans);font-size:0.52rem;font-weight:500;letter-spacing:0.55em;color:var(--or);text-transform:uppercase;margin-top:1px">PROGRAM</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#approche">Notre approche</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#biens">Nos biens</a></li>
+    <li><a href="#profil">Qui sommes-nous</a></li>
+    <li><a href="#contact" class="nav-cta">Nous contacter</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Loire / Haute Loire</div>
+    <h1 class="hero-title">
+      La maîtrise de votre<br>
+      <em>projet immobilier</em>
+    </h1>
+    <p class="hero-sub">Achat, vente, valorisation et rénovation de biens immobiliers. Une expertise terrain au service de votre patrimoine.</p>
+    <div class="hero-location">Marchand de biens · Négociateur · Investisseur</div>
+    <div class="btn-group">
+      <a href="#contact" class="btn-primary">Nous contacter</a>
+      <a href="#approche" class="btn-outline">Découvrir</a>
+    </div>
+  </div>
+  <div class="hero-scroll">Défiler</div>
+</section>
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="stat-item reveal">
+    <div class="stat-num">150+</div>
+    <div class="stat-label">Rénovations réalisées</div>
+  </div>
+  <div class="stat-item reveal" style="transition-delay:0.1s">
+    <div class="stat-num">6</div>
+    <div class="stat-label">Années d'expérience</div>
+  </div>
+  <div class="stat-item reveal" style="transition-delay:0.2s">
+    <div class="stat-num">48H</div>
+    <div class="stat-label">Offre d'achat</div>
+  </div>
+  <div class="stat-item reveal" style="transition-delay:0.3s">
+    <div class="stat-num">100%</div>
+    <div class="stat-label">Accompagnement sur mesure</div>
+  </div>
+</div>
+
+<!-- APPROCHE -->
+<section id="approche">
+  <div class="approche-grid">
+    <div class="approche-image reveal">
+      <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80" alt="Rénovation immobilière" />
+      <div class="img-badge">
+        <strong>+150</strong>
+        <span>rénovations</span>
+      </div>
+    </div>
+    <div class="reveal" style="transition-delay:0.15s">
+      <div class="section-label">Notre approche</div>
+      <h2 class="section-title">Achat – Valorisation<br><em>Rénovation</em></h2>
+      <div class="divider"><div class="divider-diamond"></div></div>
+      <p class="section-text" style="margin-bottom:1.2rem">
+        Vous possédez une maison avec terrain, un ensemble immobilier, ou d'autres biens ? Quel que soit l'état de votre propriété, nous pouvons lui donner une seconde vie.
+      </p>
+      <p class="section-text" style="margin-bottom:2rem">
+        Nous achetons, valorisons et rénovons des biens d'habitation comme d'entreprise — maisons, appartements, bâtiments industriels, restaurants et bien plus encore.
+      </p>
+      <a href="#contact" class="btn-primary">Nous contacter</a>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" style="max-width:100%;background:var(--noir);padding:8rem 4rem;">
+  <div style="max-width:1300px;margin:0 auto;">
+    <div class="services-intro">
+      <div class="reveal">
+        <div class="section-label">À votre service</div>
+        <h2 class="section-title">Nos projets<br><em>immobiliers</em></h2>
+      </div>
+      <p class="section-text reveal" style="transition-delay:0.1s;text-align:right">
+        Particuliers ou entreprises, nous intervenons sur tous types de projets avec rigueur et expertise.
+      </p>
+    </div>
+    <div class="services-grid reveal">
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V21H15v-5h-6v5H3V9.5z"/></svg>
+        </div>
+        <h3>Maison avec terrain</h3>
+        <p>Acquisition de maisons individuelles avec terrain, qu'il s'agisse de biens à rénover, de divisions parcellaires ou de projets de valorisation foncière.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="9" height="14"/><rect x="13" y="3" width="9" height="18"/></svg>
+        </div>
+        <h3>Ensemble immobilier</h3>
+        <p>Reprise d'immeubles de rapport, copropriétés, ou ensembles à restructurer. Nous étudions chaque dossier avec soin pour maximiser le potentiel du bien.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21V12h6v9"/><circle cx="12" cy="8" r="1"/></svg>
+        </div>
+        <h3>Autres produits immobiliers</h3>
+        <p>Locaux commerciaux, bâtiments industriels, restaurants, écoles… Notre expérience couvre l'ensemble des secteurs de l'immobilier professionnel et spécialisé.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROFIL -->
+<section id="profil">
+  <div class="profil-inner">
+    <div class="profil-content reveal">
+      <div class="section-label">Qui sommes-nous</div>
+      <h2 class="section-title">Une expertise<br><em>terrain</em></h2>
+      <div class="divider"><div class="divider-diamond"></div></div>
+      <p class="profil-text">
+        Victor Godie a débuté sa carrière en 2018 comme apprenti charpentier. En 2014, sa passion pour la rénovation l'a conduit à se former sur tous les corps de métier.
+      </p>
+      <p class="profil-text">
+        Titulaire d'un brevet professionnel en charpente, d'un CAP installateur thermique et d'un CAP électricien, il est devenu chef d'équipe puis conducteur de travaux tous corps d'état.
+      </p>
+      <blockquote class="profil-quote">
+        « Un travail honnête, de qualité et d'excellence — c'est l'engagement que je prends avec chaque client. »
+      </blockquote>
+      <p class="profil-text">
+        Aujourd'hui, fort de plus de 150 rénovations réalisées dans tous les secteurs, il exerce principalement comme marchand de biens et accompagne ses clients avec rigueur et transparence.
+      </p>
+    </div>
+    <div class="reveal" style="transition-delay:0.2s">
+      <div class="section-label">Notre histoire</div>
+      <h2 class="section-title">Basé à<br><em>Roanne</em></h2>
+      <div class="divider"><div class="divider-diamond"></div></div>
+      <p class="section-text" style="margin-bottom:1.5rem">
+        VG PROGRAM est une entreprise à taille humaine, forte de 6 ans d'expérience dans le bâtiment. L'éthique professionnelle et l'excellence sont les valeurs que nous plaçons au cœur de notre travail.
+      </p>
+      <p class="section-text">
+        Particuliers comme professionnels bénéficient d'un interlocuteur unique, d'un projet sur mesure et d'un accompagnement personnalisé à chaque étape.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     NOS BIENS À LA COMMERCIALISATION
+     Pour modifier : éditez le tableau `biens` dans le JS
+     ══════════════════════════════════════ -->
+<section id="biens" style="background:var(--noir);padding:8rem 4rem;">
+  <div style="max-width:1300px;margin:0 auto;">
+
+    <!-- En-tête -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4rem;flex-wrap:wrap;gap:2rem;">
+      <div class="reveal">
+        <div class="section-label">À la commercialisation</div>
+        <h2 class="section-title">Nos biens<br><em>disponibles</em></h2>
+      </div>
+      <!-- Filtres -->
+      <div class="biens-filtres reveal" style="transition-delay:0.1s">
+        <button class="filtre-btn active" data-filtre="tous">Tous</button>
+        <button class="filtre-btn" data-filtre="maison">Maisons</button>
+        <button class="filtre-btn" data-filtre="appartement">Appartements</button>
+        <button class="filtre-btn" data-filtre="terrain">Terrains</button>
+        <button class="filtre-btn" data-filtre="local">Locaux</button>
+      </div>
+    </div>
+
+    <!-- Grille des biens -->
+    <div id="biens-grid" class="biens-grid reveal" style="transition-delay:0.15s"></div>
+
+    <!-- Message aucun résultat -->
+    <div id="biens-vide" style="display:none;text-align:center;padding:4rem 0;">
+      <p style="color:var(--gris);font-size:0.9rem;letter-spacing:0.1em;">Aucun bien dans cette catégorie actuellement.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- POURQUOI NOUS -->
+<section id="pourquoi">
+  <div class="pourquoi-inner">
+    <div class="pourquoi-header reveal">
+      <div class="section-label">Pourquoi nous choisir</div>
+      <h2 class="section-title">Trois raisons de<br><em>nous faire confiance</em></h2>
+    </div>
+    <div class="raisons-grid">
+      <div class="raison reveal">
+        <div class="raison-num">01</div>
+        <div class="raison-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2z"/></svg>
+        </div>
+        <h3>Un projet sur mesure</h3>
+        <p>Chaque projet est unique. Nous adaptons notre approche à votre situation, vos objectifs et vos contraintes pour vous proposer la meilleure solution.</p>
+      </div>
+      <div class="raison reveal" style="transition-delay:0.12s">
+        <div class="raison-num">02</div>
+        <div class="raison-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <h3>Un interlocuteur unique</h3>
+        <p>JVictor Godie suit personnellement chaque dossier du début à la fin. Une relation directe, sans intermédiaire, pour plus de réactivité et de clarté.</p>
+      </div>
+      <div class="raison reveal" style="transition-delay:0.24s">
+        <div class="raison-num">03</div>
+        <div class="raison-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Un accompagnement personnel</h3>
+        <p>De la première prise de contact jusqu'à la finalisation de votre vente, nous vous accompagnons à chaque étape avec transparence et professionnalisme.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OFFRE 48H -->
+<div class="offre-banner reveal">
+  <h2>Vous souhaitez vendre un bien ?</h2>
+  <p>Nous pouvons vous faire une offre d'achat en moins de 48 heures — sans recours obligatoire à un prêt bancaire.</p>
+  <a href="#contact" class="btn-dark">Nous contacter maintenant</a>
+</div>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-grid">
+    <div class="reveal">
+      <div class="section-label">Parlons de votre projet</div>
+      <div class="contact-info">
+        <h2>Nous contacter</h2>
+        <div class="tagline">Victor Godie — Dirigeant</div>
+        <div class="contact-detail">
+          <div class="contact-detail-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="contact-detail-text">
+            <div class="label">Adresse</div>
+            <div class="value">111 chemin de la Rivoire<br>42153 Riorges</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-detail-icon">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.41 2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.74a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div class="contact-detail-text">
+            <div class="label">Téléphone</div>
+            <div class="value"><a href="tel:+33629780727">06 88 89 59 31</a></div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-detail-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div class="contact-detail-text">
+            <div class="label">Email</div>
+            <div class="value"><a href="mailto:contact@estrella-concept.fr">vg-program@hotmail.com</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal" style="transition-delay:0.15s">
+      <form class="contact-form" onsubmit="handleSubmit(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nom</label>
+            <input type="text" placeholder="Votre nom" />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="votre@email.fr" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input type="tel" placeholder="06 00 00 00 00" />
+          </div>
+          <div class="form-group">
+            <label>Société (optionnel)</label>
+            <input type="text" placeholder="Nom de votre société" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Adresse postale</label>
+          <input type="text" placeholder="Adresse de votre bien" />
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea placeholder="Décrivez votre projet immobilier..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit">Envoyer le message</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo" style="display:flex;align-items:center;gap:14px;">
+    <svg width="26" height="20" viewBox="0 0 56 44" fill="none">
+      <rect x="14" y="16" width="28" height="22" fill="none" stroke="#c9a96e" stroke-width="1"/>
+      <polygon points="28,4 6,18 50,18" fill="none" stroke="#c9a96e" stroke-width="1.2" stroke-linejoin="round"/>
+      <polygon points="28,8 12,18 44,18" fill="rgba(201,169,110,0.07)"/>
+      <rect x="19" y="21" width="5" height="6" fill="rgba(201,169,110,0.2)" stroke="#c9a96e" stroke-width="0.5"/>
+      <rect x="32" y="21" width="5" height="6" fill="rgba(201,169,110,0.2)" stroke="#c9a96e" stroke-width="0.5"/>
+      <rect x="23" y="30" width="10" height="8" fill="rgba(201,169,110,0.1)" stroke="#c9a96e" stroke-width="0.5"/>
+      <circle cx="28" cy="4" r="1.5" fill="#c9a96e"/>
+    </svg>
+    <div>
+      <div style="font-family:var(--font-serif);font-size:1.1rem;font-weight:400;letter-spacing:0.22em;color:var(--blanc)">VG <span style="color:var(--or)">PROGRAM</span></div>
+      <div style="font-family:var(--font-sans);font-size:0.58rem;letter-spacing:0.3em;color:var(--gris);text-transform:uppercase;margin-top:2px">Immobilier · Marchand de biens</div>
+    </div>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#approche">Approche</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#profil">Qui sommes-nous</a></li>
+    <li><a href="#">Mentions légales</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 VG PROGRAM — Riorges</div>
+</footer>
+
+<script>
+  // ═══════════════════════════════════════════════════
+  //  NOS BIENS — modifiez ce tableau pour mettre à jour
+  //  Statuts possibles : "dispo" | "compromis" | "vendu"
+  //  Types possibles   : "maison" | "appartement" | "terrain" | "local"
+  // ═══════════════════════════════════════════════════
+  const biens = [
+    {
+      titre: "Maison T4 avec jardin",
+      type: "maison",
+      ville: "Roanne (42300)",
+      surface: "112 m²",
+      prix: "189 000 €",
+      statut: "dispo",
+      description: "Belle maison de plain-pied entièrement rénovée, 4 pièces, cuisine équipée ouverte, jardin arboré de 450 m². Idéal famille.",
+      photo: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&q=80"
+    },
+    {
+      titre: "Appartement T3 centre-ville",
+      type: "appartement",
+      ville: "Riorges (42153)",
+      surface: "68 m²",
+      prix: "112 000 €",
+      statut: "compromis",
+      description: "Appartement lumineux au 2e étage, traversant, double exposition. Rénovation complète : sols, électricité, plomberie. Cave et parking.",
+      photo: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80"
+    },
+    {
+      titre: "Local commercial & logement",
+      type: "local",
+      ville: "Mably (42300)",
+      surface: "210 m²",
+      prix: "235 000 €",
+      statut: "dispo",
+      description: "Ensemble mixte : local commercial en RDC (85 m²) + appartement T4 à l'étage (125 m²). Forte rentabilité locative. Idéal investisseur.",
+      photo: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80"
+    }
+  ];
+
+  const statutLabel = { dispo: "Disponible", compromis: "Sous compromis", vendu: "Vendu" };
+  const typeLabel   = { maison: "Maison", appartement: "Appartement", terrain: "Terrain", local: "Local" };
+
+  function renderBiens(filtre = "tous") {
+    const grid  = document.getElementById('biens-grid');
+    const vide  = document.getElementById('biens-vide');
+    const liste = filtre === "tous" ? biens : biens.filter(b => b.type === filtre);
+    if (liste.length === 0) {
+      grid.innerHTML = '';
+      vide.style.display = 'block';
+      return;
+    }
+    vide.style.display = 'none';
+    grid.innerHTML = liste.map(b => `
+      <div class="bien-card">
+        <div class="bien-photo">
+          <img src="${b.photo}" alt="${b.titre}" loading="lazy" />
+          <span class="bien-statut statut-${b.statut}">${statutLabel[b.statut]}</span>
+          <span class="bien-type-badge">${typeLabel[b.type]}</span>
+        </div>
+        <div class="bien-body">
+          <div class="bien-ville">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${b.ville}
+          </div>
+          <div class="bien-titre">${b.titre}</div>
+          <div class="bien-desc">${b.description}</div>
+          <div class="bien-meta">
+            <div class="bien-surface">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 3v18"/></svg>
+              ${b.surface}
+            </div>
+            <div class="bien-prix">${b.prix}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    // Réappliquer le hover curseur aux nouvelles cartes
+    document.querySelectorAll('.bien-card').forEach(el => {
+      el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+      el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+    });
+  }
+
+  document.querySelectorAll('.filtre-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filtre-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderBiens(btn.dataset.filtre);
+    });
+  });
+
+  renderBiens();
+
+  // Navbar scroll
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Form submit
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.btn-submit');
+    btn.textContent = 'Message envoyé ✓';
+    btn.style.background = '#4caf50';
+    btn.style.color = '#fff';
+    setTimeout(() => {
+      btn.textContent = 'Envoyer le message';
+      btn.style.background = '';
+      btn.style.color = '';
+      e.target.reset();
+    }, 3000);
+  }
+</script>
+
+<!-- ════════════════════════════════════════════════════
+     PANNEAU ADMIN VG PROGRAM
+     Accès : cliquer sur le logo footer 3× ou aller sur #admin
+     Mot de passe par défaut : vgpro2025
+════════════════════════════════════════════════════ -->
+
+<!-- Bouton trigger discret dans le footer (triple clic sur logo) -->
+<style>
+/* ── OVERLAY ADMIN ── */
+#admin-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(8,8,8,0.97);
+  backdrop-filter: blur(20px);
+  overflow-y: auto;
+  font-family: var(--font-sans);
+}
+#admin-overlay.open { display: block; }
+
+/* ── LOGIN ── */
+#admin-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+.admin-login-box {
+  background: var(--noir-doux);
+  border: 1px solid rgba(201,169,110,0.25);
+  padding: 3rem 2.5rem;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+.admin-login-box .admin-logo {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  letter-spacing: 0.2em;
+  color: var(--or);
+  margin-bottom: 0.3rem;
+}
+.admin-login-box .admin-sub {
+  font-size: 0.62rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gris);
+  margin-bottom: 2.5rem;
+}
+.admin-input {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(201,169,110,0.2);
+  color: var(--blanc);
+  padding: 0.9rem 1.1rem;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  outline: none;
+  margin-bottom: 1rem;
+  text-align: center;
+  letter-spacing: 0.15em;
+  transition: border-color 0.3s;
+}
+.admin-input:focus { border-color: var(--or); }
+.admin-input::placeholder { color: var(--gris); letter-spacing: 0.1em; }
+.admin-btn {
+  width: 100%;
+  background: var(--or);
+  color: var(--noir);
+  border: none;
+  padding: 0.9rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-weight: 500;
+  cursor: none;
+  transition: background 0.3s;
+  margin-bottom: 0.8rem;
+}
+.admin-btn:hover { background: var(--or-clair); }
+.admin-btn.danger {
+  background: transparent;
+  border: 1px solid rgba(220,80,80,0.4);
+  color: #e06060;
+  margin-top: 0.3rem;
+}
+.admin-btn.danger:hover { background: rgba(220,80,80,0.1); }
+.admin-btn.secondary {
+  background: transparent;
+  border: 1px solid rgba(201,169,110,0.25);
+  color: var(--gris-clair);
+}
+.admin-btn.secondary:hover { border-color: var(--or); color: var(--or); }
+#admin-login-error {
+  color: #e06060;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  margin-top: 0.5rem;
+  min-height: 1.2em;
+}
+
+/* ── DASHBOARD ── */
+#admin-dashboard { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+#admin-dashboard.visible { display: block; }
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(201,169,110,0.15);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.admin-header-left .admin-logo { font-family: var(--font-serif); font-size: 1.4rem; color: var(--or); letter-spacing: 0.15em; }
+.admin-header-left p { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gris); margin-top: 0.2rem; }
+.admin-header-right { display: flex; gap: 0.8rem; align-items: center; }
+.admin-close-btn {
+  background: transparent;
+  border: 1px solid rgba(201,169,110,0.2);
+  color: var(--gris-clair);
+  padding: 0.5rem 1.2rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: none;
+  transition: all 0.3s;
+  font-family: var(--font-sans);
+}
+.admin-close-btn:hover { border-color: var(--or); color: var(--or); }
+
+/* Compteurs */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+.admin-stat {
+  background: var(--noir-doux);
+  border: 1px solid rgba(201,169,110,0.1);
+  padding: 1.2rem 1.5rem;
+  text-align: center;
+}
+.admin-stat-num { font-family: var(--font-serif); font-size: 2rem; color: var(--or); line-height: 1; }
+.admin-stat-label { font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gris); margin-top: 0.3rem; }
+
+/* Toolbar */
+.admin-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.admin-toolbar-title { font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gris-clair); }
+.admin-add-btn {
+  background: var(--or);
+  color: var(--noir);
+  border: none;
+  padding: 0.6rem 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+  cursor: none;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.admin-add-btn:hover { background: var(--or-clair); }
+
+/* Tableau des biens */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+.admin-table th {
+  text-align: left;
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gris);
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(201,169,110,0.15);
+  font-weight: 400;
+}
+.admin-table td {
+  padding: 1rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.83rem;
+  color: var(--gris-clair);
+  vertical-align: middle;
+}
+.admin-table tr:hover td { background: rgba(201,169,110,0.03); }
+.admin-table .td-titre { color: var(--blanc); font-weight: 400; }
+.admin-table .td-prix { color: var(--or); font-family: var(--font-serif); font-size: 1rem; }
+.td-statut span {
+  padding: 0.2rem 0.7rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.td-actions { display: flex; gap: 0.5rem; }
+.action-btn {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: none;
+  cursor: none;
+  font-family: var(--font-sans);
+  transition: all 0.25s;
+}
+.action-edit { background: rgba(201,169,110,0.12); color: var(--or); border: 1px solid rgba(201,169,110,0.2); }
+.action-edit:hover { background: rgba(201,169,110,0.25); }
+.action-del { background: rgba(220,80,80,0.08); color: #e06060; border: 1px solid rgba(220,80,80,0.2); }
+.action-del:hover { background: rgba(220,80,80,0.18); }
+
+/* ── MODAL ÉDITION ── */
+#admin-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+#admin-modal.open { display: flex; }
+.modal-box {
+  background: var(--noir-doux);
+  border: 1px solid rgba(201,169,110,0.25);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--blanc);
+  margin-bottom: 2rem;
+  letter-spacing: 0.05em;
+}
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.modal-grid .full { grid-column: 1 / -1; }
+.form-field { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-field label { font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gris); }
+.form-field input,
+.form-field select,
+.form-field textarea {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(201,169,110,0.2);
+  color: var(--blanc);
+  padding: 0.75rem 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.3s;
+  font-weight: 300;
+}
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus { border-color: var(--or); }
+.form-field select { cursor: none; }
+.form-field select option { background: #1a1a1a; }
+.form-field textarea { height: 90px; resize: none; }
+.modal-actions { display: flex; gap: 0.8rem; margin-top: 2rem; justify-content: flex-end; }
+.modal-preview {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  margin-top: 0.5rem;
+  border: 1px solid rgba(201,169,110,0.15);
+  display: none;
+}
+.modal-preview.show { display: block; }
+
+/* Mdp change */
+.admin-section-title {
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gris);
+  margin: 2.5rem 0 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(201,169,110,0.1);
+}
+
+/* Responsive admin */
+@media (max-width: 700px) {
+  .admin-stats { grid-template-columns: repeat(2,1fr); }
+  .modal-grid { grid-template-columns: 1fr; }
+  .admin-table th:nth-child(3),
+  .admin-table td:nth-child(3),
+  .admin-table th:nth-child(4),
+  .admin-table td:nth-child(4) { display: none; }
+}
+</style>
+
+<!-- OVERLAY ADMIN -->
+<div id="admin-overlay">
+
+  <!-- ÉCRAN LOGIN -->
+  <div id="admin-login">
+    <div class="admin-login-box">
+      <div class="admin-logo">VG PROGRAM</div>
+      <div class="admin-sub">Espace administration</div>
+      <input class="admin-input" id="admin-pwd-input" type="password" placeholder="Mot de passe" autocomplete="current-password" />
+      <button class="admin-btn" onclick="adminLogin()">Accéder</button>
+      <button class="admin-btn secondary" onclick="closeAdmin()">Annuler</button>
+      <div id="admin-login-error"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="admin-dashboard">
+    <div class="admin-header">
+      <div class="admin-header-left">
+        <div class="admin-logo">VG PROGRAM — Admin</div>
+        <p>Gestion des biens à la commercialisation</p>
+      </div>
+      <div class="admin-header-right">
+        <button class="admin-close-btn" onclick="closeAdmin()">✕ Fermer</button>
+      </div>
+    </div>
+
+    <!-- Stats rapides -->
+    <div class="admin-stats" id="admin-stats"></div>
+
+    <!-- Tableau -->
+    <div class="admin-toolbar">
+      <div class="admin-toolbar-title">Biens enregistrés</div>
+      <button class="admin-add-btn" onclick="openModal()">+ Ajouter un bien</button>
+    </div>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Type</th>
+          <th>Ville</th>
+          <th>Surface</th>
+          <th>Prix</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="admin-tbody"></tbody>
+    </table>
+
+    <!-- Changer mot de passe -->
+    <div class="admin-section-title">Sécurité</div>
+    <div style="display:flex;gap:0.8rem;flex-wrap:wrap;align-items:flex-end;">
+      <div class="form-field" style="flex:1;min-width:180px;">
+        <label>Nouveau mot de passe</label>
+        <input type="password" id="new-pwd1" class="admin-input" style="margin:0;text-align:left;letter-spacing:0.05em;" placeholder="Nouveau mot de passe" />
+      </div>
+      <div class="form-field" style="flex:1;min-width:180px;">
+        <label>Confirmer</label>
+        <input type="password" id="new-pwd2" class="admin-input" style="margin:0;text-align:left;letter-spacing:0.05em;" placeholder="Confirmer" />
+      </div>
+      <button class="admin-btn" style="width:auto;padding:0.9rem 1.5rem;margin:0;" onclick="changePwd()">Enregistrer</button>
+    </div>
+    <div id="pwd-msg" style="font-size:0.75rem;margin-top:0.6rem;min-height:1.2em;"></div>
+  </div>
+</div>
+
+<!-- MODAL ÉDITION / AJOUT -->
+<div id="admin-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Ajouter un bien</div>
+    <div class="modal-grid">
+      <div class="form-field full">
+        <label>Titre du bien</label>
+        <input type="text" id="f-titre" placeholder="Ex : Maison T4 avec jardin" />
+      </div>
+      <div class="form-field">
+        <label>Type</label>
+        <select id="f-type">
+          <option value="maison">Maison</option>
+          <option value="appartement">Appartement</option>
+          <option value="terrain">Terrain</option>
+          <option value="local">Local commercial / industriel</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Statut</label>
+        <select id="f-statut">
+          <option value="dispo">Disponible</option>
+          <option value="compromis">Sous compromis</option>
+          <option value="vendu">Vendu</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Ville</label>
+        <input type="text" id="f-ville" placeholder="Ex : Roanne (42300)" />
+      </div>
+      <div class="form-field">
+        <label>Surface</label>
+        <input type="text" id="f-surface" placeholder="Ex : 112 m²" />
+      </div>
+      <div class="form-field full">
+        <label>Prix</label>
+        <input type="text" id="f-prix" placeholder="Ex : 189 000 €" />
+      </div>
+      <div class="form-field full">
+        <label>Description</label>
+        <textarea id="f-desc" placeholder="Décrivez le bien en quelques lignes..."></textarea>
+      </div>
+      <div class="form-field full">
+        <label>URL de la photo</label>
+        <input type="text" id="f-photo" placeholder="https://..." oninput="previewPhoto(this.value)" />
+        <img id="modal-img-preview" class="modal-preview" alt="Aperçu" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="action-btn action-del" onclick="closeModal()">Annuler</button>
+      <button class="admin-btn" style="width:auto;padding:0.7rem 2rem;margin:0;" onclick="saveBien()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+//  SYSTÈME ADMIN VG PROGRAM
+// ════════════════════════════════════════
+const STORAGE_KEY_BIENS = 'vgp_biens';
+const STORAGE_KEY_PWD   = 'vgp_pwd';
+const DEFAULT_PWD       = 'vgpro2025';
+
+// Charger les biens depuis localStorage (ou utiliser les biens par défaut définis plus haut)
+function loadBiens() {
+  const saved = localStorage.getItem(STORAGE_KEY_BIENS);
+  if (saved) {
+    try { biens.length = 0; JSON.parse(saved).forEach(b => biens.push(b)); } catch(e) {}
+  }
+}
+
+function saveBiensStorage() {
+  localStorage.setItem(STORAGE_KEY_BIENS, JSON.stringify(biens));
+}
+
+function getPwd() {
+  return localStorage.getItem(STORAGE_KEY_PWD) || DEFAULT_PWD;
+}
+
+// ── OUVERTURE / FERMETURE ──
+let adminUnlocked = false;
+let editIndex = -1;
+
+function openAdmin() {
+  document.getElementById('admin-overlay').classList.add('open');
+  document.getElementById('admin-login').style.display = 'flex';
+  document.getElementById('admin-dashboard').classList.remove('visible');
+  document.getElementById('admin-pwd-input').value = '';
+  document.getElementById('admin-login-error').textContent = '';
+  setTimeout(() => document.getElementById('admin-pwd-input').focus(), 100);
+}
+
+function closeAdmin() {
+  document.getElementById('admin-overlay').classList.remove('open');
+  adminUnlocked = false;
+}
+
+function adminLogin() {
+  const val = document.getElementById('admin-pwd-input').value;
+  if (val === getPwd()) {
+    document.getElementById('admin-login').style.display = 'none';
+    document.getElementById('admin-dashboard').classList.add('visible');
+    renderAdminStats();
+    renderAdminTable();
+    adminUnlocked = true;
+  } else {
+    const err = document.getElementById('admin-login-error');
+    err.textContent = 'Mot de passe incorrect.';
+    document.getElementById('admin-pwd-input').value = '';
+    setTimeout(() => { err.textContent = ''; }, 2500);
+  }
+}
+
+// Entrée clavier sur le champ mot de passe
+document.getElementById('admin-pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') adminLogin();
+});
+
+// ── STATS ──
+function renderAdminStats() {
+  const total    = biens.length;
+  const dispo    = biens.filter(b => b.statut === 'dispo').length;
+  const compromis= biens.filter(b => b.statut === 'compromis').length;
+  const vendu    = biens.filter(b => b.statut === 'vendu').length;
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="admin-stat"><div class="admin-stat-num">${total}</div><div class="admin-stat-label">Total</div></div>
+    <div class="admin-stat"><div class="admin-stat-num" style="color:#c9a96e">${dispo}</div><div class="admin-stat-label">Disponibles</div></div>
+    <div class="admin-stat"><div class="admin-stat-num" style="color:#e07b2a">${compromis}</div><div class="admin-stat-label">Sous compromis</div></div>
+    <div class="admin-stat"><div class="admin-stat-num" style="color:#777">${vendu}</div><div class="admin-stat-label">Vendus</div></div>
+  `;
+}
+
+// ── TABLEAU ──
+const statutColors = { dispo: 'background:rgba(201,169,110,0.15);color:#c9a96e', compromis: 'background:rgba(224,123,42,0.15);color:#e07b2a', vendu: 'background:rgba(100,100,100,0.2);color:#888' };
+const typeLabelsAdmin = { maison: 'Maison', appartement: 'Appartement', terrain: 'Terrain', local: 'Local' };
+
+function renderAdminTable() {
+  const tbody = document.getElementById('admin-tbody');
+  if (biens.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--gris);padding:3rem;font-size:0.85rem;">Aucun bien enregistré — cliquez sur "+ Ajouter"</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = biens.map((b, i) => `
+    <tr>
+      <td class="td-titre">${b.titre}</td>
+      <td>${typeLabelsAdmin[b.type] || b.type}</td>
+      <td>${b.ville}</td>
+      <td>${b.surface}</td>
+      <td class="td-prix">${b.prix}</td>
+      <td class="td-statut"><span style="${statutColors[b.statut]};padding:0.2rem 0.7rem;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;">${statutLabel[b.statut]}</span></td>
+      <td><div class="td-actions">
+        <button class="action-btn action-edit" onclick="openModal(${i})">Modifier</button>
+        <button class="action-btn action-del" onclick="deleteBien(${i})">Supprimer</button>
+      </div></td>
+    </tr>
+  `).join('');
+}
+
+// ── MODAL ──
+function openModal(index = -1) {
+  editIndex = index;
+  document.getElementById('modal-title').textContent = index === -1 ? 'Ajouter un bien' : 'Modifier le bien';
+  const b = index === -1 ? { titre:'', type:'maison', statut:'dispo', ville:'', surface:'', prix:'', description:'', photo:'' } : biens[index];
+  document.getElementById('f-titre').value   = b.titre || '';
+  document.getElementById('f-type').value    = b.type || 'maison';
+  document.getElementById('f-statut').value  = b.statut || 'dispo';
+  document.getElementById('f-ville').value   = b.ville || '';
+  document.getElementById('f-surface').value = b.surface || '';
+  document.getElementById('f-prix').value    = b.prix || '';
+  document.getElementById('f-desc').value    = b.description || '';
+  document.getElementById('f-photo').value   = b.photo || '';
+  previewPhoto(b.photo || '');
+  document.getElementById('admin-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('admin-modal').classList.remove('open');
+  editIndex = -1;
+}
+
+function previewPhoto(url) {
+  const img = document.getElementById('modal-img-preview');
+  if (url && url.startsWith('http')) {
+    img.src = url;
+    img.classList.add('show');
+  } else {
+    img.classList.remove('show');
+  }
+}
+
+function saveBien() {
+  const b = {
+    titre      : document.getElementById('f-titre').value.trim(),
+    type       : document.getElementById('f-type').value,
+    statut     : document.getElementById('f-statut').value,
+    ville      : document.getElementById('f-ville').value.trim(),
+    surface    : document.getElementById('f-surface').value.trim(),
+    prix       : document.getElementById('f-prix').value.trim(),
+    description: document.getElementById('f-desc').value.trim(),
+    photo      : document.getElementById('f-photo').value.trim(),
+  };
+  if (!b.titre || !b.ville || !b.prix) {
+    alert('Merci de renseigner au minimum : titre, ville et prix.');
+    return;
+  }
+  if (editIndex === -1) { biens.push(b); }
+  else { biens[editIndex] = b; }
+  saveBiensStorage();
+  renderBiens('tous');
+  document.querySelectorAll('.filtre-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.filtre-btn[data-filtre="tous"]').classList.add('active');
+  renderAdminStats();
+  renderAdminTable();
+  closeModal();
+}
+
+function deleteBien(i) {
+  if (!confirm(`Supprimer "${biens[i].titre}" ?`)) return;
+  biens.splice(i, 1);
+  saveBiensStorage();
+  renderBiens('tous');
+  renderAdminStats();
+  renderAdminTable();
+}
+
+// ── CHANGER MOT DE PASSE ──
+function changePwd() {
+  const p1 = document.getElementById('new-pwd1').value;
+  const p2 = document.getElementById('new-pwd2').value;
+  const msg = document.getElementById('pwd-msg');
+  if (!p1) { msg.style.color='#e06060'; msg.textContent='Le mot de passe ne peut pas être vide.'; return; }
+  if (p1 !== p2) { msg.style.color='#e06060'; msg.textContent='Les mots de passe ne correspondent pas.'; return; }
+  if (p1.length < 6) { msg.style.color='#e06060'; msg.textContent='Minimum 6 caractères requis.'; return; }
+  localStorage.setItem(STORAGE_KEY_PWD, p1);
+  msg.style.color = '#4caf50';
+  msg.textContent = 'Mot de passe mis à jour ✓';
+  document.getElementById('new-pwd1').value = '';
+  document.getElementById('new-pwd2').value = '';
+  setTimeout(() => { msg.textContent = ''; }, 3000);
+}
+
+// ── TRIGGER DISCRET : triple clic sur logo footer ──
+let clickCount = 0, clickTimer;
+document.querySelector('.footer-logo').addEventListener('click', () => {
+  clickCount++;
+  clearTimeout(clickTimer);
+  clickTimer = setTimeout(() => { clickCount = 0; }, 600);
+  if (clickCount >= 3) { clickCount = 0; openAdmin(); }
+});
+
+// ── Fermer modal en cliquant à l'extérieur ──
+document.getElementById('admin-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── Initialisation : charger biens sauvegardés ──
+loadBiens();
+renderBiens('tous');
 </script>
 </body>
 </html>
